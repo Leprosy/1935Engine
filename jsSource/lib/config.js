@@ -1,5 +1,3 @@
-var GAME = GAME || {};
-
 /**
  * GAME engine config
  */

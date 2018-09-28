@@ -1,5 +1,3 @@
-var GAME = GAME || {};
-
 /**
  *  Base entity class
  *  

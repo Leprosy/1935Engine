@@ -1,10 +1,10 @@
 var GAME = GAME || {};
 
-GAME.NAMEOFYOURCLASS = function(args) {};
+GAME.ExampleClass = function(args) {};
 
-GAME.NAMEOFYOURCLASS.prototype.METHOD = function(args) {};
+GAME.ExampleClass.prototype.METHOD = function(args) {};
 
-GAME.NAMEOFMODULE = function() {
+GAME.ExampleModule = function() {
     var PRIVATESTUFF;
     return {
         PUBLICVAR: "content",
@@ -12,20 +12,14 @@ GAME.NAMEOFMODULE = function() {
     };
 }();
 
-var GAME = GAME || {};
-
 GAME.Canvas = function() {
     return {};
 }();
-
-var GAME = GAME || {};
 
 GAME.config = {
     __version__: "0.01",
     __name__: "Engine demo"
 };
-
-var GAME = GAME || {};
 
 GAME.Ent = function(name, cmp) {
     this.id = new Date().getTime().toString(16);
@@ -106,8 +100,6 @@ GAME.EntGroup.prototype.queryCmp = function(cmpList) {};
 
 GAME.Components = {};
 
-var GAME = GAME || {};
-
 GAME.Key = function() {
     var keys = {};
     var pre = null;
@@ -172,8 +164,6 @@ GAME.Key = function() {
     };
 }();
 
-var GAME = GAME || {};
-
 GAME.State = function() {
     var states = {};
     var currentState = null;
@@ -215,8 +205,6 @@ GAME.State = function() {
         }
     };
 }();
-
-var GAME = GAME || {};
 
 GAME.$ = {
     taldo: "OAW",

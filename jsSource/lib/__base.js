@@ -1,24 +1,30 @@
-var GAME = GAME || {};
-
 /**
- *  Base GAME module...use it to build your own class/package/whatever
- *  
+ * This is an example of a GAME class.
+ * @name ExampleClass
+ * @memberof GAME
  */
-
-// Demo class
-GAME.NAMEOFYOURCLASS = function(args) {
+GAME.ExampleClass = function(args) {
     // Do something
 };
-GAME.NAMEOFYOURCLASS.prototype.METHOD = function(args) {
+GAME.ExampleClass.prototype.METHOD = function(args) {
     // Do something
 }
 
-// Demo module
-GAME.NAMEOFMODULE = (function() {
+/**
+ * This is an example of a GAME module, a singleton with functions and values
+ * @name ExampleModule
+ * @memberof GAME
+ */
+GAME.ExampleModule = (function() {
     var PRIVATESTUFF;
 
     return {
         PUBLICVAR: "content",
+
+        /**
+         * A public method of the example module
+         * @memberof ExampleModule
+         */
         PUBLICMETHOD: function(args) {
             // Do something
         }

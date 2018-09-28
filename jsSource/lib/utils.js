@@ -1,5 +1,3 @@
-var GAME = GAME || {};
-
 /**
  * Loaders, helpers and other utils & tools
  */
