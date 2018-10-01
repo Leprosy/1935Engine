@@ -319,13 +319,35 @@ GAME.Components.pos = {
     }
 };
 
+GAME.Components.sprite = {
+    sprite: null,
+    texture: null,
+    height: 0,
+    width: 0,
+    frame: 0,
+    create: function(txt, width, height) {
+        this.texture = txt;
+        this.height = height;
+        this.width = width;
+        this.setFrame(0);
+        this.sprite = new PIXI.Sprite(this.texture);
+        GAME.pixiApp.stage.addChild(this.sprite);
+    },
+    setFrame: function(fr) {
+        var x = fr * this.width % this.texture.baseTexture.width;
+        var y = Math.floor(fr * this.width / this.texture.baseTexture.width) * this.height;
+        this.frame = fr;
+        this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
+    }
+};
+
 GAME.State.add("load", {
     name: "Loading",
     init: function() {
         PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? "WebGL" : "canvas");
         GAME.pixiApp = new PIXI.Application();
         $("#screen")[0].appendChild(GAME.pixiApp.view);
-        PIXI.loader.add("sprites", "img/sprites.png").on("progress", function(a, b, c) {
+        PIXI.loader.add("sprites", "img/sprite.png").on("progress", function(a, b, c) {
             console.log("Load State: Progress", this, a, b, c);
         }).load(function() {
             GAME.State.set("main_menu");
@@ -337,8 +359,14 @@ GAME.State.add("load", {
 GAME.State.add("main_menu", {
     name: "Main Menu",
     init: function() {
-        GAME.sprite = new PIXI.Sprite(PIXI.loader.resources.sprites.texture);
-        GAME.pixiApp.stage.addChild(GAME.sprite);
+        var frame = 0;
+        GAME.player = new GAME.Ent("player", [ "pos", "sprite" ]);
+        GAME.player.sprite.create(PIXI.loader.resources.sprites.texture, 100, 100);
+        setInterval(function() {
+            if (++frame == 27) frame = 0;
+            GAME.player.sprite.setFrame(frame);
+            GAME.player.sprite.sprite.x += 5;
+        }, 50);
     },
     destroy: function() {}
 });

@@ -3,6 +3,6 @@
  */
 
 GAME.Canvas = (function() {
-    return {}
+    return {};
 })();
 
