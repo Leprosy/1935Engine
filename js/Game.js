@@ -1,8 +1,45 @@
-var GAME = GAME || {};
+var GAME = {
+    name: "1935EngineApp",
+    version: "0.1"
+};
 
-GAME.ExampleClass = function(args) {};
+var TALDO = {};
 
-GAME.ExampleClass.prototype.METHOD = function(args) {};
+TALDO.MyClass = class {
+    constructor(name) {
+        this.name = name;
+    }
+    hello() {
+        return `hello, ${this.name}`;
+    }
+};
+
+TALDO.MyModule = {
+    name: "module",
+    value: 66,
+    hello: function(name) {
+        return `hello, ${name}`;
+    }
+};
+
+TALDO.Another = function() {
+    var num = 1;
+    return {
+        getNum: function() {
+            return ++num;
+        },
+        sayHi: function(str) {
+            return `Hello, ${str}`;
+        }
+    };
+}();
+
+GAME.ExampleClass = class {
+    constructor() {}
+    method(args) {
+        return true;
+    }
+};
 
 GAME.ExampleModule = function() {
     var PRIVATESTUFF;
@@ -16,72 +53,58 @@ GAME.Canvas = function() {
     return {};
 }();
 
-GAME.config = {
-    __version__: "0.01",
-    __name__: "Engine demo"
-};
-
-GAME.Ent = function(name, cmp) {
-    this.id = new Date().getTime().toString(16);
-    this.name = name;
-    this.tags = [];
-    if (GAME.$.isArray(cmp)) {
-        for (var i = 0; i < cmp.length; ++i) {
-            this.addCmp(cmp[i]);
-        }
-    }
-    return this;
-};
-
-GAME.Ent.prototype.addCmp = function(key) {
-    if (GAME.Components.hasOwnProperty(key)) {
-        this[key] = {};
-        GAME.$.extend(this[key], GAME.Components[key]);
+GAME.Ent = class {
+    constructor(name, cmpList) {
+        this.id = new Date().getTime().toString(16);
+        this.name = name;
+        this.tags = [];
+        this.addCmps(cmpList);
         return this;
-    } else {
-        throw Error("GAME.Ent: Component '" + key + "' not found");
     }
-};
-
-GAME.Ent.prototype.removeCmp = function(key) {
-    delete this[key];
-    return this;
-};
-
-GAME.Ent.prototype.addTag = function(tag) {
-    this.tags.push(tag);
-    return this;
-};
-
-GAME.Ent.prototype.removeTag = function(tag) {
-    this.tags.splice(this.tags.indexOf(tag), 1);
-    return this;
-};
-
-GAME.Ent.prototype.hasTag = function(tag) {
-    return this.tags.indexOf(tag) > -1;
-};
-
-GAME.Ent.prototype.hasAllTags = function(tagList) {
-    for (var i = 0; i < tagList.length; ++i) {
-        if (!this.hasTag(tagList[i])) {
-            return false;
+    attr(obj) {
+        console.log("adding attrs", obj);
+        return this;
+    }
+    addCmps(keyList) {
+        if (!GAME.$.isArray(keyList)) {
+            keyList = [ keyList ];
         }
-    }
-    return true;
-};
-
-GAME.Ent.prototype.hasCmp = function(cmp) {
-    return this.hasOwnProperty(cmp);
-};
-
-GAME.Ent.prototype.hasAllCmp = function(cmpList) {
-    for (var i in cmpList) {
-        if (!this.hasCmp(cmpList[i])) {
-            return false;
+        for (var i = 0; i < keyList.length; ++i) {
+            if (GAME.Components.hasOwnProperty(keyList[i])) {
+                GAME.$.extend(this, GAME.Components[keyList[i]]);
+            } else {
+                throw Error("GAME.Ent: Component '" + keyList[i] + "' not found");
+            }
         }
+        return this;
     }
-    return true;
+    removeCmp(key) {
+        return this;
+    }
+    addTags(tagList) {
+        if (!GAME.$.isArray(tagList)) {
+            tagList = [ tagList ];
+        }
+        for (var i = 0; i < tagList.length; ++i) {
+            this.tags.push(tagList[i]);
+        }
+        return this;
+    }
+    removeTag(tag) {
+        this.tags.splice(this.tags.indexOf(tag), 1);
+        return this;
+    }
+    hasTags(tagList) {
+        if (!GAME.$.isArray(tagList)) {
+            tagList = [ tagList ];
+        }
+        for (var i = 0; i < tagList.length; ++i) {
+            if (this.tags.indexOf(tagList[i]) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 };
 
 GAME.EntGroup = function() {
@@ -311,27 +334,25 @@ GAME.Components.pos = {
         this.x = pos.x;
         this.y = pos.y;
     },
-    toString: function() {
-        return this.x + "-" + this.y;
-    },
-    equals: function(pos) {
+    samePos: function(pos) {
         return this.x === pos.x && this.y === pos.y;
     }
 };
 
 GAME.Components.sprite = {
-    sprite: null,
+    spriteObj: null,
     texture: null,
     height: 0,
     width: 0,
     frame: 0,
-    create: function(txt, width, height) {
+    sprite: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
         this.width = width;
         this.setFrame(0);
-        this.sprite = new PIXI.Sprite(this.texture);
-        GAME.pixiApp.stage.addChild(this.sprite);
+        this.spriteObj = new PIXI.Sprite(this.texture);
+        GAME.pixiApp.stage.addChild(this.spriteObj);
+        return this;
     },
     setFrame: function(fr) {
         var x = fr * this.width % this.texture.baseTexture.width;
@@ -360,13 +381,18 @@ GAME.State.add("main_menu", {
     name: "Main Menu",
     init: function() {
         var frame = 0;
-        GAME.player = new GAME.Ent("player", [ "pos", "sprite" ]);
-        GAME.player.sprite.create(PIXI.loader.resources.sprites.texture, 100, 100);
+        GAME.player = new GAME.Ent("player", [ "pos", "sprite" ]).attr({
+            x: 10,
+            y: 10
+        }).sprite(PIXI.loader.resources.sprites.texture, 100, 100);
         setInterval(function() {
             if (++frame == 27) frame = 0;
-            GAME.player.sprite.setFrame(frame);
-            GAME.player.sprite.sprite.x += 5;
-        }, 50);
+            GAME.player.setFrame(frame);
+            GAME.player.spriteObj.x += 5;
+            GAME.player.spriteObj.y += .5;
+            GAME.player.spriteObj.rotation += .005;
+            GAME.player.spriteObj.alpha -= .005;
+        }, 25);
     },
     destroy: function() {}
 });

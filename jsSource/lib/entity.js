@@ -1,44 +1,99 @@
 /**
  *  Base entity class
  *  
- *  id: unique id of the ent
- *  name: optional name for the ent
- *  tags: list of tags for this ent
- *  data: Placeholder for user data
- *  group: the ent group that holds this ent, if any
+ *  @member id - unique id of the ent
+ *  @member name - optional name for the ent
  */
-GAME.Ent = function(name, cmp) {
-    // Setup
-    this.id = new Date().getTime().toString(16);
-    this.name = name;
-    this.tags = [];
+GAME.Ent = class {
+    constructor(name, cmpList) {
+        // Setup
+        this.id = new Date().getTime().toString(16);
+        this.name = name;
+        this.tags = [];
+        this.addCmps(cmpList);
 
-    // Add components, if any
-    if (GAME.$.isArray(cmp)) {
-        for (var i = 0; i < cmp.length; ++i) {
-            this.addCmp(cmp[i]);
-        }
-    }
-
-    // Chain API
-    return this;
-};
-
-// Adds a component to the entity
-GAME.Ent.prototype.addCmp = function(key) {
-    if (GAME.Components.hasOwnProperty(key)) {
-        this[key] = {};
-        GAME.$.extend(this[key], GAME.Components[key]);
         return this;
-    } else {
-        throw Error("GAME.Ent: Component '" + key + "' not found");
     }
-};
-// Removes a component to the entity
-GAME.Ent.prototype.removeCmp = function(key) {
-    delete this[key];
-    return this;
-};
+
+    /**
+     * Setup attributes of the entity
+     */
+    attr(obj) {
+        console.log("adding attrs", obj)
+
+        return this;
+    }
+
+    /**
+     *  Adds a component to the entity
+     */
+    addCmps(keyList) {
+        if (!GAME.$.isArray(keyList)) {
+            keyList = [keyList];
+        }
+
+        for (var i = 0; i < keyList.length; ++i) {
+            if (GAME.Components.hasOwnProperty(keyList[i])) {
+                GAME.$.extend(this, GAME.Components[keyList[i]]);
+            } else {
+                throw Error("GAME.Ent: Component '" + keyList[i] + "' not found");
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Removes a component to the entity
+     * NOT YET IMPLEMENTED
+     */
+    removeCmp(key) {
+        return this;
+    }
+
+    /**
+     * Adds a  list of tags to the entity
+     */
+    addTags(tagList) {
+        if (!GAME.$.isArray(tagList)) {
+            tagList = [tagList];
+        }
+
+        for (var i = 0; i < tagList.length; ++i) {
+            this.tags.push(tagList[i]);
+        }
+
+        return this;
+    }
+
+    /**
+     * Removes a tag to the entity
+     */
+    removeTag(tag) {
+        this.tags.splice(this.tags.indexOf(tag), 1);
+        return this;
+    }
+
+    /**
+     * Checks for tags in the entity
+     * @param tagList
+     * @returns boolean
+     */
+    hasTags(tagList) {
+        if (!GAME.$.isArray(tagList)) {
+            tagList = [tagList];
+        }
+
+        for (var i = 0; i < tagList.length; ++i) {
+            if (this.tags.indexOf(tagList[i]) < 0) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+}
+/*
 // Adds a tag to the entity
 GAME.Ent.prototype.addTag = function(tag) {
     this.tags.push(tag);
@@ -74,7 +129,7 @@ GAME.Ent.prototype.hasAllCmp = function(cmpList) {
 
     return true;
 };
-
+*/
 
 
 

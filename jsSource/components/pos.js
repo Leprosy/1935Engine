@@ -34,12 +34,7 @@ GAME.Components.pos = {
         this.x = pos.x;
         this.y = pos.y;
     },
-
-    toString: function() {
-        return this.x + "-" + this.y;
-    },
-
-    equals: function(pos) {
+    samePos: function(pos) {
         return this.x === pos.x && this.y === pos.y;
     }
 }

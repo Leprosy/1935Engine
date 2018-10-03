@@ -1,5 +1,8 @@
 /**
  * This is the 1935Engine main namespace
- * @name GAME
  */
-var GAME = GAME || {};
+var GAME = {
+    name: "1935EngineApp",
+    version: "0.1"
+};
+

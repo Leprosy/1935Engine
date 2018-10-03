@@ -1,14 +1,21 @@
 /**
  * This is an example of a GAME class.
- * @name ExampleClass
- * @memberof GAME
  */
-GAME.ExampleClass = function(args) {
+GAME.ExampleClass = class {
     // Do something
+    constructor() {
+        
+    }
+
+    /**
+     * This method does something
+     * @param args
+     * @return true
+     */
+    method(args) {
+        return true
+    }
 };
-GAME.ExampleClass.prototype.METHOD = function(args) {
-    // Do something
-}
 
 /**
  * This is an example of a GAME module, a singleton with functions and values

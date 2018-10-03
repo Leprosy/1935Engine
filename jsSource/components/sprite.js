@@ -1,18 +1,22 @@
 GAME.Components.sprite = {
-    sprite: null,
+    spriteObj: null,
     texture: null,
     height: 0,
     width: 0,
     frame: 0,
 
-    create: function(txt, width, height) {
+    /**
+     * "constructor" should return this
+     */
+    sprite: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
         this.width = width;
 
         this.setFrame(0);
-        this.sprite = new PIXI.Sprite(this.texture);
-        GAME.pixiApp.stage.addChild(this.sprite);
+        this.spriteObj = new PIXI.Sprite(this.texture);
+        GAME.pixiApp.stage.addChild(this.spriteObj);
+        return this
     },
 
     setFrame: function(fr) {

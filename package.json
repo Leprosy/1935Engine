@@ -8,7 +8,8 @@
   },
   "scripts": {
     "buildjs": "node_modules/uglify-es/bin/uglifyjs jsSource/*.js jsSource/lib/* jsSource/components/* jsSource/states/* -b > js/Game.js",
-    "builddoc": "rm docs/ -R;node node_modules/jsdoc/jsdoc.js jsSource/ --recurse --debug --verbose --destination ./docs/ --readme README.md"
+    "builddoc": "rm docs/ -R;node node_modules/jsdoc/jsdoc.js jsSource/ --recurse --debug --verbose --destination ./docs/ --readme README.md",
+    "testdoc": "rm docs/ -R;node node_modules/jsdoc/jsdoc.js jsSource/test.js --debug --verbose --destination ./docs/ --readme README.md"
   },
   "author": "Miguel Rojas",
   "license": "ISC",
