@@ -7,7 +7,8 @@ GAME.State.add("main_menu", {
 
         GAME.player = new GAME.Ent("player", ["pos", "sprite"])
                               .attr({x: 10, y: 10})
-                              .sprite(PIXI.loader.resources.sprites.texture, 100, 100);
+                              .sprite(GAME.Canvas.getTxt("sprites"), 100, 100);
+                            //.sprite(PIXI.loader.resources.sprites.texture, 100, 100);
 
         setInterval(function() {
             if (++frame == 27) frame = 0;

@@ -50,7 +50,22 @@ GAME.ExampleModule = function() {
 }();
 
 GAME.Canvas = function() {
-    return {};
+    var pixiApp;
+    return {
+        init: function(DOMelem) {
+            PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? "WebGL" : "canvas");
+            pixiApp = new PIXI.Application();
+            DOMelem.appendChild(pixiApp.view);
+        },
+        addSprite: function(texture) {
+            var sprite = new PIXI.Sprite(texture);
+            pixiApp.stage.addChild(sprite);
+            return sprite;
+        },
+        getTxt: function(textureName) {
+            return PIXI.loader.resources[textureName].texture;
+        }
+    };
 }();
 
 GAME.Ent = class {
@@ -350,8 +365,7 @@ GAME.Components.sprite = {
         this.height = height;
         this.width = width;
         this.setFrame(0);
-        this.spriteObj = new PIXI.Sprite(this.texture);
-        GAME.pixiApp.stage.addChild(this.spriteObj);
+        this.spriteObj = GAME.Canvas.addSprite(this.texture);
         return this;
     },
     setFrame: function(fr) {
@@ -365,9 +379,7 @@ GAME.Components.sprite = {
 GAME.State.add("load", {
     name: "Loading",
     init: function() {
-        PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? "WebGL" : "canvas");
-        GAME.pixiApp = new PIXI.Application();
-        $("#screen")[0].appendChild(GAME.pixiApp.view);
+        GAME.Canvas.init($("#screen")[0]);
         PIXI.loader.add("sprites", "img/sprite.png").on("progress", function(a, b, c) {
             console.log("Load State: Progress", this, a, b, c);
         }).load(function() {
@@ -384,7 +396,7 @@ GAME.State.add("main_menu", {
         GAME.player = new GAME.Ent("player", [ "pos", "sprite" ]).attr({
             x: 10,
             y: 10
-        }).sprite(PIXI.loader.resources.sprites.texture, 100, 100);
+        }).sprite(GAME.Canvas.getTxt("sprites"), 100, 100);
         setInterval(function() {
             if (++frame == 27) frame = 0;
             GAME.player.setFrame(frame);

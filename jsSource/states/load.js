@@ -2,10 +2,8 @@
 GAME.State.add("load", {
     name: "Loading",
     init: function() {
-        // Init PIXI
-        PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? "WebGL" : "canvas");
-        GAME.pixiApp = new PIXI.Application();
-        $("#screen")[0].appendChild(GAME.pixiApp.view);
+        // Init canvas
+        GAME.Canvas.init($("#screen")[0]);
 
         // Loader for assets, go to main_menu
         PIXI.loader

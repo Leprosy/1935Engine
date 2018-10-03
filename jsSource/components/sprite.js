@@ -12,10 +12,9 @@ GAME.Components.sprite = {
         this.texture = txt;
         this.height = height;
         this.width = width;
-
         this.setFrame(0);
-        this.spriteObj = new PIXI.Sprite(this.texture);
-        GAME.pixiApp.stage.addChild(this.spriteObj);
+        this.spriteObj = GAME.Canvas.addSprite(this.texture)
+
         return this
     },
 
