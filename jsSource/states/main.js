@@ -5,7 +5,7 @@ GAME.State.add("main_menu", {
     init: function() {
         var frame = 0;
 
-        GAME.player = new GAME.Ent("player", ["pos", "sprite"])
+        GAME.player = new GAME.Ent("player", ["actor"])
                               .attr({x: 10, y: 10})
                               .sprite(GAME.Canvas.getTxt("sprites"), 100, 100);
 
