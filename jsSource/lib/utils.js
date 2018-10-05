@@ -91,5 +91,9 @@ GAME.$ = {
     // Output data to the game console
     log: function(str) {
         $("#console").prepend("> " + str + "\n");
+    },
+
+    getUID: function() {
+        return new Date().getTime().toString(16);
     }
 };

@@ -51,11 +51,25 @@ GAME.ExampleModule = function() {
 
 GAME.Canvas = function() {
     var pixiApp;
+    var refreshCalls = [];
+    var refreshCycle = function(callTime) {
+        for (var i = 0; i < refreshCalls.length; ++i) {
+            var call = refreshCalls[i].call;
+            var fps = refreshCalls[i].fps;
+            var lastRefresh = refreshCalls[i].lastRefresh;
+            if ((callTime - lastRefresh) / 1e3 > 1 / fps) {
+                call(lastRefresh, callTime);
+                refreshCalls[i].lastRefresh = callTime;
+            }
+        }
+        requestAnimationFrame(refreshCycle);
+    };
     return {
         init: function(DOMelem) {
             PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? "WebGL" : "canvas");
             pixiApp = new PIXI.Application();
             DOMelem.appendChild(pixiApp.view);
+            requestAnimationFrame(refreshCycle);
         },
         addSprite: function(texture) {
             var sprite = new PIXI.Sprite(texture);
@@ -64,13 +78,35 @@ GAME.Canvas = function() {
         },
         getTxt: function(textureName) {
             return PIXI.loader.resources[textureName].texture;
+        },
+        registerRefreshCall: function(call, fps) {
+            var id = GAME.$.getUID();
+            refreshCalls.push({
+                id: id,
+                fps: fps,
+                call: call,
+                lastRefresh: performance.now()
+            });
+            return id;
+        },
+        cancelRefreshCall: function(id) {
+            var call = refreshCalls.filter(obj => {
+                return obj.id === id;
+            });
+            if (call.length > 0) {
+                var index = refreshCalls.indexOf(call[0]);
+                refreshCalls.splice(index, 1);
+            }
+        },
+        getRefreshCallList: function() {
+            return refreshCalls;
         }
     };
 }();
 
 GAME.Ent = class {
     constructor(name, cmpList) {
-        this.id = new Date().getTime().toString(16);
+        this.id = GAME.$.getUID();
         this.name = name;
         this.tags = [];
         this.addCmps(cmpList);
@@ -310,6 +346,9 @@ GAME.$ = {
     },
     log: function(str) {
         $("#console").prepend("> " + str + "\n");
+    },
+    getUID: function() {
+        return new Date().getTime().toString(16);
     }
 };
 
@@ -360,6 +399,7 @@ GAME.Components.sprite = {
     height: 0,
     width: 0,
     frame: 0,
+    currentAnimation: null,
     sprite: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
@@ -373,6 +413,18 @@ GAME.Components.sprite = {
         var y = Math.floor(fr * this.width / this.texture.baseTexture.width) * this.height;
         this.frame = fr;
         this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
+    },
+    animate: function(start, end, fps) {
+        var _this = this;
+        this.currentAnimation = GAME.Canvas.registerRefreshCall(function() {
+            if (_this.frame++ > end) {
+                _this.frame = start;
+            }
+            _this.setFrame(_this.frame);
+        }, fps);
+    },
+    stopAnimation: function() {
+        GAME.Canvas.cancelRefreshCall(this.currentAnimation);
     }
 };
 
@@ -397,14 +449,10 @@ GAME.State.add("main_menu", {
             x: 10,
             y: 10
         }).sprite(GAME.Canvas.getTxt("sprites"), 100, 100);
-        setInterval(function() {
-            if (++frame == 27) frame = 0;
-            GAME.player.setFrame(frame);
-            GAME.player.spriteObj.x += 5;
-            GAME.player.spriteObj.y += .5;
-            GAME.player.spriteObj.rotation += .005;
-            GAME.player.spriteObj.alpha -= .005;
-        }, 25);
+        GAME.player.animate(0, 25, 60);
+        setTimeout(function() {
+            GAME.player.stopAnimation();
+        }, 4e3);
     },
     destroy: function() {}
 });

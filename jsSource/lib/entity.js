@@ -7,7 +7,7 @@
 GAME.Ent = class {
     constructor(name, cmpList) {
         // Setup
-        this.id = new Date().getTime().toString(16);
+        this.id = GAME.$.getUID();
         this.name = name;
         this.tags = [];
         this.addCmps(cmpList);
