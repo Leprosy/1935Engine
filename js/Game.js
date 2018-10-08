@@ -359,6 +359,7 @@ GAME.Components.actor = {
     width: 0,
     frame: 0,
     currentAnimation: null,
+    currentUpdate: null,
     sprite: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
@@ -382,8 +383,17 @@ GAME.Components.actor = {
             _this.setFrame(_this.frame);
         }, fps);
     },
+    update: function(call, fps) {
+        var _this = this;
+        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
+            call(_this);
+        }, fps);
+    },
     stopAnimation: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
+    },
+    stopUpdate: function() {
+        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
     }
 };
 
@@ -450,6 +460,9 @@ GAME.State.add("main_menu", {
             y: 10
         }).sprite(GAME.Canvas.getTxt("sprites"), 100, 100);
         GAME.player.animate(0, 25, 60);
+        GAME.player.update(function(actor) {
+            actor.spriteObj.x += 2;
+        }, 20);
         setTimeout(function() {
             GAME.player.stopAnimation();
         }, 4e3);
