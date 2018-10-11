@@ -8,7 +8,9 @@ GAME.State.add("load", {
         // Loader for assets, go to main_menu
         PIXI.loader
             .add("sprites", "img/sprite.png")
-            //.add("spritesheet", "img/sprite.json")
+            .add("bg-back", "img/bg-back.png")
+            .add("bg-middle", "img/bg-middle.png")
+            .add("bg-front", "img/bg-front.png")
             .on("progress", function(a, b, c) {
                 console.log("Load State: Progress", this, a, b, c);
             })

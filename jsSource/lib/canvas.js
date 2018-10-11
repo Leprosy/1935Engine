@@ -33,6 +33,11 @@ GAME.Canvas = (function() {
             pixiApp.stage.addChild(sprite);
             return sprite;
         },
+        addTilingSprite: function(texture, width, height) {
+            var tsprite = new PIXI.TilingSprite(texture, width, height);
+            pixiApp.stage.addChild(tsprite);
+            return tsprite;
+        },
 
         getTxt: function(textureName) {
             return PIXI.loader.resources[textureName].texture;

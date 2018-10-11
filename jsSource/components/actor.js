@@ -10,7 +10,7 @@ GAME.Components.actor = {
     /**
      * "constructor" should return this
      */
-    sprite: function(txt, width, height) {
+    actor: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
         this.width = width;

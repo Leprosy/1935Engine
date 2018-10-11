@@ -76,6 +76,11 @@ GAME.Canvas = function() {
             pixiApp.stage.addChild(sprite);
             return sprite;
         },
+        addTilingSprite: function(texture, width, height) {
+            var tsprite = new PIXI.TilingSprite(texture, width, height);
+            pixiApp.stage.addChild(tsprite);
+            return tsprite;
+        },
         getTxt: function(textureName) {
             return PIXI.loader.resources[textureName].texture;
         },
@@ -360,7 +365,7 @@ GAME.Components.actor = {
     frame: 0,
     currentAnimation: null,
     currentUpdate: null,
-    sprite: function(txt, width, height) {
+    actor: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
         this.width = width;
@@ -391,6 +396,32 @@ GAME.Components.actor = {
     },
     stopAnimation: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
+    },
+    stopUpdate: function() {
+        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
+    }
+};
+
+GAME.Components.bg = {
+    spriteObj: null,
+    texture: null,
+    currentUpdate: null,
+    bg: function(txt, width, height) {
+        this.texture = txt;
+        this.spriteObj = GAME.Canvas.addTilingSprite(this.texture, width, height);
+        return this;
+    },
+    scrollX: function(dx) {
+        this.spriteObj.tilePosition.x += dx;
+    },
+    scrollY: function(dy) {
+        this.spriteObj.tilePosition.y += dy;
+    },
+    update: function(call, fps) {
+        var _this = this;
+        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
+            call(_this);
+        }, fps);
     },
     stopUpdate: function() {
         GAME.Canvas.cancelRefreshCall(this.currentUpdate);
@@ -442,7 +473,7 @@ GAME.State.add("load", {
     name: "Loading",
     init: function() {
         GAME.Canvas.init($("#screen")[0]);
-        PIXI.loader.add("sprites", "img/sprite.png").on("progress", function(a, b, c) {
+        PIXI.loader.add("sprites", "img/sprite.png").add("bg-back", "img/bg-back.png").add("bg-middle", "img/bg-middle.png").add("bg-front", "img/bg-front.png").on("progress", function(a, b, c) {
             console.log("Load State: Progress", this, a, b, c);
         }).load(function() {
             GAME.State.set("main_menu");
@@ -454,17 +485,33 @@ GAME.State.add("load", {
 GAME.State.add("main_menu", {
     name: "Main Menu",
     init: function() {
-        var frame = 0;
+        GAME.bg1 = new GAME.Ent("bg1", [ "bg" ]).bg(GAME.Canvas.getTxt("bg-back"), 800, 600);
+        GAME.bg2 = new GAME.Ent("bg2", [ "bg" ]).bg(GAME.Canvas.getTxt("bg-middle"), 800, 600);
+        GAME.bg3 = new GAME.Ent("bg3", [ "bg" ]).bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
         GAME.player = new GAME.Ent("player", [ "actor" ]).attr({
             x: 10,
             y: 10
-        }).sprite(GAME.Canvas.getTxt("sprites"), 100, 100);
+        }).actor(GAME.Canvas.getTxt("sprites"), 100, 100);
+        GAME.player.spriteObj.y = 450;
         GAME.player.animate(0, 25, 60);
         GAME.player.update(function(actor) {
             actor.spriteObj.x += 2;
-        }, 20);
+        }, 60);
+        GAME.bg1.update(function(bg) {
+            bg.scrollX(-1);
+        }, 60);
+        GAME.bg2.update(function(bg) {
+            bg.scrollX(-5);
+        }, 60);
+        GAME.bg3.update(function(bg) {
+            bg.scrollX(-10);
+        }, 60);
         setTimeout(function() {
             GAME.player.stopAnimation();
+            GAME.player.stopUpdate();
+            GAME.bg1.stopUpdate();
+            GAME.bg2.stopUpdate();
+            GAME.bg3.stopUpdate();
         }, 4e3);
     },
     destroy: function() {}
