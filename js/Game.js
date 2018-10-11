@@ -388,24 +388,14 @@ GAME.Components.actor = {
             _this.setFrame(_this.frame);
         }, fps);
     },
-    update: function(call, fps) {
-        var _this = this;
-        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
-            call(_this);
-        }, fps);
-    },
     stopAnimation: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
-    },
-    stopUpdate: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
     }
 };
 
 GAME.Components.bg = {
     spriteObj: null,
     texture: null,
-    currentUpdate: null,
     bg: function(txt, width, height) {
         this.texture = txt;
         this.spriteObj = GAME.Canvas.addTilingSprite(this.texture, width, height);
@@ -416,15 +406,6 @@ GAME.Components.bg = {
     },
     scrollY: function(dy) {
         this.spriteObj.tilePosition.y += dy;
-    },
-    update: function(call, fps) {
-        var _this = this;
-        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
-            call(_this);
-        }, fps);
-    },
-    stopUpdate: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
     }
 };
 
@@ -469,6 +450,20 @@ GAME.Components.pos = {
     }
 };
 
+GAME.Components.update = {
+    currentUpdate: null,
+    update: function(call, fps) {
+        var _this = this;
+        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
+            call(_this);
+        }, fps);
+        return this;
+    },
+    stopUpdate: function() {
+        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
+    }
+};
+
 GAME.State.add("load", {
     name: "Loading",
     init: function() {
@@ -485,10 +480,10 @@ GAME.State.add("load", {
 GAME.State.add("main_menu", {
     name: "Main Menu",
     init: function() {
-        GAME.bg1 = new GAME.Ent("bg1", [ "bg" ]).bg(GAME.Canvas.getTxt("bg-back"), 800, 600);
-        GAME.bg2 = new GAME.Ent("bg2", [ "bg" ]).bg(GAME.Canvas.getTxt("bg-middle"), 800, 600);
-        GAME.bg3 = new GAME.Ent("bg3", [ "bg" ]).bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
-        GAME.player = new GAME.Ent("player", [ "actor" ]).attr({
+        GAME.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-back"), 800, 600);
+        GAME.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-middle"), 800, 600);
+        GAME.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
+        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).attr({
             x: 10,
             y: 10
         }).actor(GAME.Canvas.getTxt("sprites"), 100, 100);

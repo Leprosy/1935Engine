@@ -1,7 +1,9 @@
+/**
+ * This component implements a scrollable background
+ */
 GAME.Components.bg = {
     spriteObj: null,
     texture: null,
-    currentUpdate: null,
 
     /**
      * "constructor" should return this
@@ -18,17 +20,5 @@ GAME.Components.bg = {
     },
     scrollY: function(dy) {
         this.spriteObj.tilePosition.y += dy;
-    },
-
-    update: function(call, fps) {
-        var _this = this;
-
-        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
-            call(_this);
-        }, fps)
-    },
-
-    stopUpdate: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
-    },
+    }
 }

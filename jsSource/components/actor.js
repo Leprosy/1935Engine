@@ -1,3 +1,7 @@
+/**
+ * This component implements a game actor, that have a sprite sheet and animations
+ * TODO: Setup animations in a dict & callbacks for events asociated with them.
+ */
 GAME.Components.actor = {
     spriteObj: null,
     texture: null,
@@ -8,7 +12,7 @@ GAME.Components.actor = {
     currentUpdate: null,
 
     /**
-     * "constructor" should return this
+     * Setup actor data
      */
     actor: function(txt, width, height) {
         this.texture = txt;
@@ -20,6 +24,9 @@ GAME.Components.actor = {
         return this
     },
 
+    /**
+     * Sets the current animation frame
+     */
     setFrame: function(fr) {
         var x = (fr * this.width) % this.texture.baseTexture.width;
         var y = Math.floor((fr * this.width) / this.texture.baseTexture.width) * this.height;
@@ -27,6 +34,9 @@ GAME.Components.actor = {
         this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
     },
 
+    /**
+     * Setups an animation call
+     */
     animate: function(start, end, fps) {
         var _this = this;
 
@@ -39,18 +49,10 @@ GAME.Components.actor = {
         }, fps)
     },
 
-    update: function(call, fps) {
-        var _this = this;
-
-        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
-            call(_this);
-        }, fps)
-    },
-
+    /**
+     * Stops current animation call
+     */
     stopAnimation: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
-    },
-    stopUpdate: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
     },
 }
