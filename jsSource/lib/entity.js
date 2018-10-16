@@ -44,6 +44,23 @@ GAME.Ent = class {
     }
 
     /**
+     * Sets up obj
+     */
+    attrs(obj) {
+        var keys = Object.keys(obj);
+
+        for (var i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+
+            if (this.hasOwnProperty(key)) {
+                this[key] = obj[key];
+            }
+        }
+
+        return this;
+    }
+
+    /**
      * Removes a component to the entity
      * NOT YET IMPLEMENTED
      */

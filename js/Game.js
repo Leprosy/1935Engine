@@ -134,6 +134,16 @@ GAME.Ent = class {
         }
         return this;
     }
+    attrs(obj) {
+        var keys = Object.keys(obj);
+        for (var i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+            if (this.hasOwnProperty(key)) {
+                this[key] = obj[key];
+            }
+        }
+        return this;
+    }
     removeCmp(key) {
         return this;
     }
@@ -184,7 +194,6 @@ GAME.Key = function() {
     var pre = null;
     var post = null;
     var listener = function(event) {
-        console.log("GAME.Key: Event fired.", event);
         if (keys.hasOwnProperty(event.code)) {
             if (typeof pre === "function") {
                 console.log("GAME.Key: Pre-call method.");
@@ -194,8 +203,13 @@ GAME.Key = function() {
                     return;
                 }
             }
-            console.log("GAME.Key: Registered key pressed", event);
-            keys[event.code]();
+            if (event.type === "keyup") {
+                keys[event.code][event.type]();
+                keys[event.code].pressed = false;
+            } else if (event.type === "keydown" && !keys[event.code].pressed) {
+                keys[event.code][event.type]();
+                keys[event.code].pressed = true;
+            }
             if (typeof post === "function") {
                 console.log("GAME.Key: Post-call method.");
                 post(event);
@@ -209,17 +223,22 @@ GAME.Key = function() {
         setPost: function(f) {
             post = f;
         },
-        add: function(code, handler) {
-            if (typeof handler !== "function") {
-                throw Error("GAME.Key: Invalid listener function provided.");
+        add: function(code, handlerDown, handlerUp) {
+            if (typeof handlerDown !== "function" || typeof handlerUp !== "function") {
+                throw Error("GAME.Key: Invalid listener functions provided.");
             }
             if (GAME.$.isEmptyObj(keys)) {
                 document.addEventListener("keydown", listener);
+                document.addEventListener("keyup", listener);
                 console.log("GAME.Key: Listener registered. Adding the key too.", code);
             } else {
                 console.log("GAME.Key: Already registered the listener, just adding the key.", code);
             }
-            keys[code] = handler;
+            keys[code] = {
+                keydown: handlerDown,
+                keyup: handlerUp,
+                pressed: false
+            };
         },
         remove: function(code) {
             console.log("GAME.Key: Removing handler", code);
@@ -228,6 +247,7 @@ GAME.Key = function() {
                 if (GAME.$.isEmptyObj(keys)) {
                     console.log("GAME.Key: No more handlers, removing listener.");
                     document.removeEventListener("keydown", listener);
+                    document.removeEventListener("keyup", listener);
                 }
             } else {
                 throw Error("GAME.Key: Code doesn't have an event attached.", code);
@@ -483,31 +503,29 @@ GAME.State.add("main_menu", {
         GAME.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-back"), 800, 600);
         GAME.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-middle"), 800, 600);
         GAME.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
-        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).attr({
-            x: 10,
-            y: 10
+        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).attrs({
+            x: 200,
+            y: 450
         }).actor(GAME.Canvas.getTxt("sprites"), 100, 100);
         GAME.player.spriteObj.y = 450;
-        GAME.player.animate(0, 25, 60);
-        GAME.player.update(function(actor) {
-            actor.spriteObj.x += 2;
-        }, 60);
-        GAME.bg1.update(function(bg) {
-            bg.scrollX(-1);
-        }, 60);
-        GAME.bg2.update(function(bg) {
-            bg.scrollX(-5);
-        }, 60);
-        GAME.bg3.update(function(bg) {
-            bg.scrollX(-10);
-        }, 60);
-        setTimeout(function() {
-            GAME.player.stopAnimation();
-            GAME.player.stopUpdate();
+        GAME.player.spriteObj.x = 300;
+        GAME.Key.add("ArrowRight", function(ev) {
+            GAME.bg1.update(function(bg) {
+                bg.scrollX(-1);
+            }, 60);
+            GAME.bg2.update(function(bg) {
+                bg.scrollX(-5);
+            }, 60);
+            GAME.bg3.update(function(bg) {
+                bg.scrollX(-10);
+            }, 60);
+            GAME.player.animate(0, 25, 60);
+        }, function(ev) {
             GAME.bg1.stopUpdate();
             GAME.bg2.stopUpdate();
             GAME.bg3.stopUpdate();
-        }, 4e3);
+            GAME.player.stopAnimation();
+        });
     },
     destroy: function() {}
 });

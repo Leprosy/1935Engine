@@ -6,7 +6,7 @@ GAME.Key = (function() {
     var pre = null;
     var post = null;
     var listener = function(event) {
-        console.log("GAME.Key: Event fired.", event);
+        //console.log("GAME.Key: Event fired.", event);
 
         if (keys.hasOwnProperty(event.code)) {
             // Pre call
@@ -20,9 +20,15 @@ GAME.Key = (function() {
                 }
             }
 
-            // Run registered key handlers
-            console.log("GAME.Key: Registered key pressed", event);
-            keys[event.code]();
+            // Run registered key handlers depending of the event generated(keyup, keydown)
+            //console.log("GAME.Key: Registered key pressed", event);
+            if (event.type === "keyup") {
+                keys[event.code][event.type]();
+                keys[event.code].pressed = false;
+            } else if (event.type === "keydown" && !keys[event.code].pressed) {
+                keys[event.code][event.type]();
+                keys[event.code].pressed = true;
+            }
 
             // Post call
             if (typeof post === "function") {
@@ -42,19 +48,20 @@ GAME.Key = (function() {
         },
 
         // Adds a key handler to the register
-        add: function(code, handler) {
-            if (typeof handler !== "function") {
-                throw Error("GAME.Key: Invalid listener function provided.");
+        add: function(code, handlerDown, handlerUp) {
+            if (typeof handlerDown !== "function" || typeof handlerUp !== "function") {
+                throw Error("GAME.Key: Invalid listener functions provided.");
             }
 
             if (GAME.$.isEmptyObj(keys)) {
                 document.addEventListener("keydown", listener);
+                document.addEventListener("keyup", listener);
                 console.log("GAME.Key: Listener registered. Adding the key too.", code)
             } else {
                 console.log("GAME.Key: Already registered the listener, just adding the key.", code)
             }
 
-            keys[code] = handler;
+            keys[code] = {keydown: handlerDown, keyup: handlerUp, pressed: false};
         },
 
         // Remove key handlers
@@ -66,6 +73,7 @@ GAME.Key = (function() {
                 if (GAME.$.isEmptyObj(keys)) {
                     console.log("GAME.Key: No more handlers, removing listener.");
                     document.removeEventListener("keydown", listener);
+                    document.removeEventListener("keyup", listener);
                 }
             } else {
                 throw Error("GAME.Key: Code doesn't have an event attached.", code);
@@ -85,13 +93,10 @@ GAME.Key = (function() {
 /**
 Example
 
-GAME.Key.addEvent("KeyA", function(ev) {
-    console.log("Key A pressed", ev)
+GAME.Key.add("KeyA", function handlerDown(ev) {
+    console.log("Key A pressed", ev);
+}, function handlerUp(ev) {
+    console.log("Key A released", ev);
 });
-GAME.Key.addEvent("KeyS", function(ev) {
-    console.log("Key S pressed")
-});
-GAME.Key.addEvent("KeyD", function(ev) {
-    console.log("Key D pressed")
-});
+
 */

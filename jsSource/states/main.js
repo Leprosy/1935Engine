@@ -10,11 +10,24 @@ GAME.State.add("main_menu", {
         GAME.bg3 = new GAME.Ent("bg3", ["bg", "update"])
                           .bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
         GAME.player = new GAME.Ent("player", ["actor", "update"])
-                              .attr({x: 10, y: 10})
+                              .attrs({x: 200, y: 450})
                               .actor(GAME.Canvas.getTxt("sprites"), 100, 100);
 
-        GAME.player.spriteObj.y = 450; // Do this with attr
-        GAME.player.animate(0, 25, 60);
+        GAME.player.spriteObj.y = 450;
+        GAME.player.spriteObj.x = 300;
+
+        GAME.Key.add("ArrowRight", function(ev) {
+            GAME.bg1.update(function(bg) { bg.scrollX(-1) }, 60);
+            GAME.bg2.update(function(bg) { bg.scrollX(-5) }, 60);
+            GAME.bg3.update(function(bg) { bg.scrollX(-10) }, 60);
+            GAME.player.animate(0, 25, 60);
+        }, function(ev) {
+            GAME.bg1.stopUpdate();
+            GAME.bg2.stopUpdate();
+            GAME.bg3.stopUpdate();
+            GAME.player.stopAnimation();
+        });
+        /*GAME.player.animate(0, 25, 60);
         GAME.player.update(function(actor) { actor.spriteObj.x += 2 }, 60);
         GAME.bg1.update(function(bg) { bg.scrollX(-1) }, 60);
         GAME.bg2.update(function(bg) { bg.scrollX(-5) }, 60);
@@ -26,7 +39,7 @@ GAME.State.add("main_menu", {
             GAME.bg1.stopUpdate();
             GAME.bg2.stopUpdate();
             GAME.bg3.stopUpdate();
-        }, 4000);
+        }, 4000);*/
     },
 
     destroy: function() {
