@@ -509,6 +509,8 @@ GAME.State.add("main_menu", {
         }).actor(GAME.Canvas.getTxt("sprites"), 100, 100);
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
+        GAME.bg1.spriteObj.filters = [ new PIXI.filters.BlurFilter(3) ];
+        GAME.bg2.spriteObj.filters = [ new PIXI.filters.BlurFilter(2) ];
         GAME.Key.add("ArrowRight", function(ev) {
             GAME.bg1.update(function(bg) {
                 bg.scrollX(-1);

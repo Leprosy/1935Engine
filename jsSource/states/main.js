@@ -15,6 +15,8 @@ GAME.State.add("main_menu", {
 
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
+        /*GAME.bg1.spriteObj.filters = [new PIXI.filters.BlurFilter(3)];
+        GAME.bg2.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];*/
 
         GAME.Key.add("ArrowRight", function(ev) {
             GAME.bg1.update(function(bg) { bg.scrollX(-1) }, 60);
@@ -27,19 +29,6 @@ GAME.State.add("main_menu", {
             GAME.bg3.stopUpdate();
             GAME.player.stopAnimation();
         });
-        /*GAME.player.animate(0, 25, 60);
-        GAME.player.update(function(actor) { actor.spriteObj.x += 2 }, 60);
-        GAME.bg1.update(function(bg) { bg.scrollX(-1) }, 60);
-        GAME.bg2.update(function(bg) { bg.scrollX(-5) }, 60);
-        GAME.bg3.update(function(bg) { bg.scrollX(-10) }, 60);
-
-        setTimeout(function() {
-            GAME.player.stopAnimation();
-            GAME.player.stopUpdate();
-            GAME.bg1.stopUpdate();
-            GAME.bg2.stopUpdate();
-            GAME.bg3.stopUpdate();
-        }, 4000);*/
     },
 
     destroy: function() {
