@@ -3,17 +3,35 @@
  * TODO: more than one update call?
  */
 GAME.Components.update = {
-    currentUpdate: null,
+    updates: {},
+    currentUpdates: {},
 
     /**
      * Setups the current update call
      */
-    update: function(call, fps) {
+    setupUpdate: function(name, call, fps) {
+        this.updates[name] = {
+            call: call,
+            fps: fps
+        };
+    },
+
+    startUpdate: function(name) {
+        // If update is currently running, don't do anything
+        if (this.currentUpdates.hasOwnProperty(name)) {
+            return;
+        }
+
+        if (!this.updates.hasOwnProperty(name)) {
+            throw Error(`Update Component: no update call called ${name}`);
+            return;
+        }
+
         var _this = this;
 
-        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
-            call(_this);
-        }, fps);
+        this.currentUpdates[name] = GAME.Canvas.registerRefreshCall(function() {
+            _this.updates[name].call(_this);
+        }, _this.updates[name].fps);
 
         return this;
     },
@@ -21,7 +39,8 @@ GAME.Components.update = {
     /**
      * Stops current update call
      */
-    stopUpdate: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
+    stopUpdate: function(name) {
+        GAME.Canvas.cancelRefreshCall(this.currentUpdates[name]);
+        delete this.currentUpdates[name];
     },
 }

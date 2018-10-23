@@ -8,8 +8,9 @@ GAME.Components.actor = {
     height: 0,
     width: 0,
     frame: 0,
+    animations: {},
+    updated: {},
     currentAnimation: null,
-    currentUpdate: null,
 
     /**
      * Setup actor data
@@ -37,22 +38,33 @@ GAME.Components.actor = {
     /**
      * Setups an animation call
      */
-    animate: function(start, end, fps) {
+    setupAnim: function(name, frames, fps) {
+        this.animations[name] = {
+            frames: frames,
+            fps: fps,
+            index: 0
+        }
+    },
+
+    startAnim: function(name) {
+        this.stopAnim();
         var _this = this;
 
         this.currentAnimation = GAME.Canvas.registerRefreshCall(function() {
-            if (_this.frame++ > end) {
-                _this.frame = start;
+            var frames = _this.animations[name].frames;
+
+            if (_this.animations[name].index >= frames.length) {
+                _this.animations[name].index = 0;
             }
 
-            _this.setFrame(_this.frame);
-        }, fps)
+            _this.setFrame(frames[_this.animations[name].index++]);
+        }, this.animations[name].fps)
     },
 
     /**
-     * Stops current animation call
+     * Stop current animation
      */
-    stopAnimation: function() {
+    stopAnim: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
     },
 }

@@ -329,14 +329,7 @@ GAME.$ = {
         }
     },
     extend: function(source, newObj) {
-        var keys = Object.keys(newObj);
-        for (var i = 0; i < keys.length; ++i) {
-            if (Array.isArray(newObj[keys[i]])) {
-                source[keys[i]] = [];
-            } else {
-                source[keys[i]] = newObj[keys[i]];
-            }
-        }
+        return Object.assign(source, newObj);
     },
     die: function(str) {
         if (typeof str === "undefined" || str === "") {
@@ -383,8 +376,9 @@ GAME.Components.actor = {
     height: 0,
     width: 0,
     frame: 0,
+    animations: {},
+    updated: {},
     currentAnimation: null,
-    currentUpdate: null,
     actor: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
@@ -399,16 +393,25 @@ GAME.Components.actor = {
         this.frame = fr;
         this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
     },
-    animate: function(start, end, fps) {
+    setupAnim: function(name, frames, fps) {
+        this.animations[name] = {
+            frames: frames,
+            fps: fps,
+            index: 0
+        };
+    },
+    startAnim: function(name) {
+        this.stopAnim();
         var _this = this;
         this.currentAnimation = GAME.Canvas.registerRefreshCall(function() {
-            if (_this.frame++ > end) {
-                _this.frame = start;
+            var frames = _this.animations[name].frames;
+            if (_this.animations[name].index >= frames.length) {
+                _this.animations[name].index = 0;
             }
-            _this.setFrame(_this.frame);
-        }, fps);
+            _this.setFrame(frames[_this.animations[name].index++]);
+        }, this.animations[name].fps);
     },
-    stopAnimation: function() {
+    stopAnim: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
     }
 };
@@ -471,27 +474,80 @@ GAME.Components.pos = {
 };
 
 GAME.Components.update = {
-    currentUpdate: null,
-    update: function(call, fps) {
+    updates: {},
+    currentUpdates: {},
+    setupUpdate: function(name, call, fps) {
+        this.updates[name] = {
+            call: call,
+            fps: fps
+        };
+    },
+    startUpdate: function(name) {
+        if (this.currentUpdates.hasOwnProperty(name)) {
+            return;
+        }
+        if (!this.updates.hasOwnProperty(name)) {
+            throw Error(`Update Component: no update call called ${name}`);
+            return;
+        }
         var _this = this;
-        this.currentUpdate = GAME.Canvas.registerRefreshCall(function() {
-            call(_this);
-        }, fps);
+        this.currentUpdates[name] = GAME.Canvas.registerRefreshCall(function() {
+            _this.updates[name].call(_this);
+        }, _this.updates[name].fps);
         return this;
     },
-    stopUpdate: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentUpdate);
+    stopUpdate: function(name) {
+        GAME.Canvas.cancelRefreshCall(this.currentUpdates[name]);
+        delete this.currentUpdates[name];
     }
 };
+
+GAME.State.add("demo", {
+    name: "Demo",
+    init: function() {
+        GAME.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-back"), 800, 600);
+        GAME.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
+        GAME.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
+        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("demo-player"), 100, 100);
+        GAME.player.setupAnim("idle", [ 10 ], 60);
+        GAME.player.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
+        GAME.bg1.setupUpdate("scroll1", function(bg) {
+            bg.scrollX(-1);
+        }, 60);
+        GAME.bg2.setupUpdate("scroll2", function(bg) {
+            bg.scrollX(-5);
+        }, 60);
+        GAME.bg3.setupUpdate("scroll3", function(bg) {
+            bg.scrollX(-10);
+        }, 60);
+        GAME.player.spriteObj.y = 450;
+        GAME.player.spriteObj.x = 300;
+        GAME.player.startAnim("idle");
+        GAME.Key.add("ArrowRight", function(ev) {
+            GAME.bg1.startUpdate("scroll1");
+            GAME.bg2.startUpdate("scroll2");
+            GAME.bg3.startUpdate("scroll3");
+            GAME.player.startAnim("walk");
+        }, function(ev) {
+            GAME.bg1.stopUpdate("scroll1");
+            GAME.bg2.stopUpdate("scroll2");
+            GAME.bg3.stopUpdate("scroll3");
+            GAME.player.startAnim("idle");
+        });
+    },
+    destroy: function() {}
+});
 
 GAME.State.add("load", {
     name: "Loading",
     init: function() {
         GAME.Canvas.init($("#screen")[0]);
-        PIXI.loader.add("sprites", "img/sprite.png").add("bg-back", "img/bg-back.png").add("bg-middle", "img/bg-middle.png").add("bg-front", "img/bg-front.png").on("progress", function(a, b, c) {
-            console.log("Load State: Progress", this, a, b, c);
+        PIXI.loader.add("player", "img/player.png").add("demo-player", "img/demo-player.png").add("demo-bg-back", "img/demo-bg-back.png").add("demo-bg-middle", "img/demo-bg-middle.png").add("demo-bg-front", "img/demo-bg-front.png").on("progress", function(a, b, c) {
+            console.debug("Load State: Progress", this, a, b, c);
+        }).on("error", function(a, b, c) {
+            throw Error("Load State: error loading resource", this, a, b, c);
         }).load(function() {
-            GAME.State.set("main_menu");
+            GAME.State.set("demo");
         });
     },
     destroy: function() {}
@@ -500,33 +556,48 @@ GAME.State.add("load", {
 GAME.State.add("main_menu", {
     name: "Main Menu",
     init: function() {
-        GAME.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-back"), 800, 600);
-        GAME.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-middle"), 800, 600);
-        GAME.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
-        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).attrs({
-            x: 200,
-            y: 450
-        }).actor(GAME.Canvas.getTxt("sprites"), 100, 100);
+        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("player"), 50, 40);
+        GAME.player.setupAnim("idle", [ 0, 1 ], 10);
+        GAME.player.setupAnim("left", [ 2, 3 ], 10);
+        GAME.player.setupAnim("right", [ 4, 5 ], 10);
+        GAME.player.setupUpdate("up", function(obj) {
+            obj.spriteObj.y -= 5;
+        }, 60);
+        GAME.player.setupUpdate("down", function(obj) {
+            obj.spriteObj.y += 5;
+        }, 60);
+        GAME.player.setupUpdate("left", function(obj) {
+            obj.spriteObj.x -= 5;
+        }, 60);
+        GAME.player.setupUpdate("right", function(obj) {
+            obj.spriteObj.x += 5;
+        }, 60);
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
-        GAME.bg1.spriteObj.filters = [ new PIXI.filters.BlurFilter(3) ];
-        GAME.bg2.spriteObj.filters = [ new PIXI.filters.BlurFilter(2) ];
+        GAME.player.startAnim("idle");
         GAME.Key.add("ArrowRight", function(ev) {
-            GAME.bg1.update(function(bg) {
-                bg.scrollX(-1);
-            }, 60);
-            GAME.bg2.update(function(bg) {
-                bg.scrollX(-5);
-            }, 60);
-            GAME.bg3.update(function(bg) {
-                bg.scrollX(-10);
-            }, 60);
-            GAME.player.animate(0, 25, 60);
+            GAME.player.startAnim("right");
+            GAME.player.startUpdate("right");
         }, function(ev) {
-            GAME.bg1.stopUpdate();
-            GAME.bg2.stopUpdate();
-            GAME.bg3.stopUpdate();
-            GAME.player.stopAnimation();
+            GAME.player.startAnim("idle");
+            GAME.player.stopUpdate("right");
+        });
+        GAME.Key.add("ArrowLeft", function(ev) {
+            GAME.player.startAnim("left");
+            GAME.player.startUpdate("left");
+        }, function(ev) {
+            GAME.player.startAnim("idle");
+            GAME.player.stopUpdate("left");
+        });
+        GAME.Key.add("ArrowUp", function(ev) {
+            GAME.player.startUpdate("up");
+        }, function(ev) {
+            GAME.player.stopUpdate("up");
+        });
+        GAME.Key.add("ArrowDown", function(ev) {
+            GAME.player.startUpdate("down");
+        }, function(ev) {
+            GAME.player.stopUpdate("down");
         });
     },
     destroy: function() {}

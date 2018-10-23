@@ -3,31 +3,47 @@ GAME.State.add("main_menu", {
     name: "Main Menu",
 
     init: function() {
-        GAME.bg1 = new GAME.Ent("bg1", ["bg", "update"])
-                          .bg(GAME.Canvas.getTxt("bg-back"), 800, 600);
-        GAME.bg2 = new GAME.Ent("bg2", ["bg", "update"])
-                          .bg(GAME.Canvas.getTxt("bg-middle"), 800, 600);
-        GAME.bg3 = new GAME.Ent("bg3", ["bg", "update"])
-                          .bg(GAME.Canvas.getTxt("bg-front"), 800, 600);
         GAME.player = new GAME.Ent("player", ["actor", "update"])
-                              .attrs({x: 200, y: 450})
-                              .actor(GAME.Canvas.getTxt("sprites"), 100, 100);
+                              .actor(GAME.Canvas.getTxt("player"), 50, 40); // TODO: pass only the name of the txt resource?
+
+        GAME.player.setupAnim("idle", [0, 1], 10);
+        GAME.player.setupAnim("left", [2, 3], 10);
+        GAME.player.setupAnim("right", [4, 5], 10);
+        GAME.player.setupUpdate("up", function(obj) { obj.spriteObj.y-=5 }, 60);
+        GAME.player.setupUpdate("down", function(obj) { obj.spriteObj.y+=5 }, 60);
+        GAME.player.setupUpdate("left", function(obj) { obj.spriteObj.x-=5 }, 60);
+        GAME.player.setupUpdate("right", function(obj) { obj.spriteObj.x+=5 }, 60);
 
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
-        /*GAME.bg1.spriteObj.filters = [new PIXI.filters.BlurFilter(3)];
-        GAME.bg2.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];*/
+        GAME.player.startAnim("idle");
 
         GAME.Key.add("ArrowRight", function(ev) {
-            GAME.bg1.update(function(bg) { bg.scrollX(-1) }, 60);
-            GAME.bg2.update(function(bg) { bg.scrollX(-5) }, 60);
-            GAME.bg3.update(function(bg) { bg.scrollX(-10) }, 60);
-            GAME.player.animate(0, 25, 60);
+            GAME.player.startAnim("right");
+            GAME.player.startUpdate("right");
         }, function(ev) {
-            GAME.bg1.stopUpdate();
-            GAME.bg2.stopUpdate();
-            GAME.bg3.stopUpdate();
-            GAME.player.stopAnimation();
+            GAME.player.startAnim("idle");
+            GAME.player.stopUpdate("right");
+        });
+
+        GAME.Key.add("ArrowLeft", function(ev) {
+            GAME.player.startAnim("left");
+            GAME.player.startUpdate("left");
+        }, function(ev) {
+            GAME.player.startAnim("idle");
+            GAME.player.stopUpdate("left");
+        });
+
+        GAME.Key.add("ArrowUp", function(ev) {
+            GAME.player.startUpdate("up");
+        }, function(ev) {
+            GAME.player.stopUpdate("up");
+        });
+
+        GAME.Key.add("ArrowDown", function(ev) {
+            GAME.player.startUpdate("down");
+        }, function(ev) {
+            GAME.player.stopUpdate("down");
         });
     },
 

@@ -6,16 +6,21 @@ GAME.State.add("load", {
         GAME.Canvas.init($("#screen")[0]);
 
         // Loader for assets, go to main_menu
-        PIXI.loader
-            .add("sprites", "img/sprite.png")
-            .add("bg-back", "img/bg-back.png")
-            .add("bg-middle", "img/bg-middle.png")
-            .add("bg-front", "img/bg-front.png")
+        PIXI.loader // TODO: Refactor this in a proper module
+            .add("player", "img/player.png")
+            .add("demo-player", "img/demo-player.png")
+            .add("demo-bg-back", "img/demo-bg-back.png")
+            .add("demo-bg-middle", "img/demo-bg-middle.png")
+            .add("demo-bg-front", "img/demo-bg-front.png")
             .on("progress", function(a, b, c) {
-                console.log("Load State: Progress", this, a, b, c);
+                console.debug("Load State: Progress", this, a, b, c);
+            })
+            .on("error", function(a, b, c) {
+                throw Error("Load State: error loading resource", this, a, b, c);
             })
             .load(function() {
-                GAME.State.set("main_menu");
+                //GAME.State.set("main_menu");
+                GAME.State.set("demo");
             });
 
     },

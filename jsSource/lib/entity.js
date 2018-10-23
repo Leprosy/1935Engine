@@ -17,6 +17,7 @@ GAME.Ent = class {
 
     /**
      * Setup attributes of the entity
+     * TODO: implement this!
      */
     attr(obj) {
         console.log("adding attrs", obj)

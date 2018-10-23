@@ -34,7 +34,8 @@ GAME.$ = {
     // Object extension
     // TODO: Check arrays, functions, objects...this works for copy components?
     extend: function(source, newObj) {
-        var keys = Object.keys(newObj);
+        return Object.assign(source, newObj); // TODO: ES6 required
+        /* var keys = Object.keys(newObj);
 
         for (var i = 0; i < keys.length; ++i) {
             if (Array.isArray(newObj[keys[i]])) {
@@ -42,7 +43,7 @@ GAME.$ = {
             } else {
                 source[keys[i]] = newObj[keys[i]];
             }
-        }
+        } */
     },
 
     // This implements RPG dice notation
