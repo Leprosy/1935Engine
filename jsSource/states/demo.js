@@ -14,9 +14,9 @@ GAME.State.add("demo", {
 
         GAME.player.setupAnim("idle", [10], 60);
         GAME.player.setupAnim("walk", [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], 60);
-        GAME.bg1.setupUpdate("scroll1", function(bg) { bg.scrollX(-1) }, 60);
-        GAME.bg2.setupUpdate("scroll2", function(bg) { bg.scrollX(-5) }, 60);
-        GAME.bg3.setupUpdate("scroll3", function(bg) { bg.scrollX(-10) }, 60);
+        GAME.bg1.setupUpdate("scroll", function(bg) { bg.scrollX(-1) }, 60);
+        GAME.bg2.setupUpdate("scroll", function(bg) { bg.scrollX(-5) }, 60);
+        GAME.bg3.setupUpdate("scroll", function(bg) { bg.scrollX(-10) }, 60);
 
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
@@ -25,14 +25,14 @@ GAME.State.add("demo", {
         //GAME.bg2.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];
 
         GAME.Key.add("ArrowRight", function(ev) {
-            GAME.bg1.startUpdate("scroll1");
-            GAME.bg2.startUpdate("scroll2");
-            GAME.bg3.startUpdate("scroll3");
+            GAME.bg1.startUpdate("scroll");
+            GAME.bg2.startUpdate("scroll");
+            GAME.bg3.startUpdate("scroll");
             GAME.player.startAnim("walk");
         }, function(ev) {
-            GAME.bg1.stopUpdate("scroll1");
-            GAME.bg2.stopUpdate("scroll2");
-            GAME.bg3.stopUpdate("scroll3");
+            GAME.bg1.stopUpdate("scroll");
+            GAME.bg2.stopUpdate("scroll");
+            GAME.bg3.stopUpdate("scroll");
             GAME.player.startAnim("idle");
         });
     },

@@ -1,6 +1,5 @@
 /**
  * Component that implements an update call to the entity
- * TODO: more than one update call?
  */
 GAME.Components.update = {
     updates: {},
@@ -15,7 +14,6 @@ GAME.Components.update = {
             fps: fps
         };
     },
-
     startUpdate: function(name) {
         // If update is currently running, don't do anything
         if (this.currentUpdates.hasOwnProperty(name)) {

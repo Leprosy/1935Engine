@@ -35,7 +35,8 @@ GAME.Ent = class {
 
         for (var i = 0; i < keyList.length; ++i) {
             if (GAME.Components.hasOwnProperty(keyList[i])) {
-                GAME.$.extend(this, GAME.Components[keyList[i]]);
+                var component = GAME.$.clone(GAME.Components[keyList[i]]);
+                Object.assign(this, component);
             } else {
                 throw Error("GAME.Ent: Component '" + keyList[i] + "' not found");
             }

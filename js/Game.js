@@ -127,7 +127,8 @@ GAME.Ent = class {
         }
         for (var i = 0; i < keyList.length; ++i) {
             if (GAME.Components.hasOwnProperty(keyList[i])) {
-                GAME.$.extend(this, GAME.Components[keyList[i]]);
+                var component = GAME.$.clone(GAME.Components[keyList[i]]);
+                Object.assign(this, component);
             } else {
                 throw Error("GAME.Ent: Component '" + keyList[i] + "' not found");
             }
@@ -328,8 +329,16 @@ GAME.$ = {
             arr.splice(index, 1);
         }
     },
-    extend: function(source, newObj) {
-        return Object.assign(source, newObj);
+    clone: function(obj) {
+        var clone = {};
+        for (var i in obj) {
+            if (obj[i] != null && typeof obj[i] == "object") {
+                clone[i] = this.clone(obj[i]);
+            } else {
+                clone[i] = obj[i];
+            }
+        }
+        return clone;
     },
     die: function(str) {
         if (typeof str === "undefined" || str === "") {
@@ -511,27 +520,27 @@ GAME.State.add("demo", {
         GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("demo-player"), 100, 100);
         GAME.player.setupAnim("idle", [ 10 ], 60);
         GAME.player.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
-        GAME.bg1.setupUpdate("scroll1", function(bg) {
+        GAME.bg1.setupUpdate("scroll", function(bg) {
             bg.scrollX(-1);
         }, 60);
-        GAME.bg2.setupUpdate("scroll2", function(bg) {
+        GAME.bg2.setupUpdate("scroll", function(bg) {
             bg.scrollX(-5);
         }, 60);
-        GAME.bg3.setupUpdate("scroll3", function(bg) {
+        GAME.bg3.setupUpdate("scroll", function(bg) {
             bg.scrollX(-10);
         }, 60);
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
         GAME.player.startAnim("idle");
         GAME.Key.add("ArrowRight", function(ev) {
-            GAME.bg1.startUpdate("scroll1");
-            GAME.bg2.startUpdate("scroll2");
-            GAME.bg3.startUpdate("scroll3");
+            GAME.bg1.startUpdate("scroll");
+            GAME.bg2.startUpdate("scroll");
+            GAME.bg3.startUpdate("scroll");
             GAME.player.startAnim("walk");
         }, function(ev) {
-            GAME.bg1.stopUpdate("scroll1");
-            GAME.bg2.stopUpdate("scroll2");
-            GAME.bg3.stopUpdate("scroll3");
+            GAME.bg1.stopUpdate("scroll");
+            GAME.bg2.stopUpdate("scroll");
+            GAME.bg3.stopUpdate("scroll");
             GAME.player.startAnim("idle");
         });
     },

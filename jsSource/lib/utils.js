@@ -31,19 +31,19 @@ GAME.$ = {
         }
     },
 
-    // Object extension
-    // TODO: Check arrays, functions, objects...this works for copy components?
-    extend: function(source, newObj) {
-        return Object.assign(source, newObj); // TODO: ES6 required
-        /* var keys = Object.keys(newObj);
+    // Object cloning
+    clone: function(obj) {
+        var clone = {};
 
-        for (var i = 0; i < keys.length; ++i) {
-            if (Array.isArray(newObj[keys[i]])) {
-                source[keys[i]] = [];
+        for (var i in obj) {
+            if (obj[i] != null && typeof(obj[i]) == "object") {
+                clone[i] = this.clone(obj[i]);
             } else {
-                source[keys[i]] = newObj[keys[i]];
+                clone[i] = obj[i];
             }
-        } */
+        }
+
+        return clone;
     },
 
     // This implements RPG dice notation
