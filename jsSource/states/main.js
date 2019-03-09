@@ -9,10 +9,10 @@ GAME.State.add("main_menu", {
         GAME.player.setupAnim("idle", [0, 1], 10);
         GAME.player.setupAnim("left", [2, 3], 10);
         GAME.player.setupAnim("right", [4, 5], 10);
-        GAME.player.setupUpdate("up", function(obj) { obj.spriteObj.y-=5 }, 60);
-        GAME.player.setupUpdate("down", function(obj) { obj.spriteObj.y+=5 }, 60);
-        GAME.player.setupUpdate("left", function(obj) { obj.spriteObj.x-=5 }, 60);
-        GAME.player.setupUpdate("right", function(obj) { obj.spriteObj.x+=5 }, 60);
+        GAME.player.setupUpdate("up", function(obj) { obj.spriteObj.y-=10 }, 60);
+        GAME.player.setupUpdate("down", function(obj) { obj.spriteObj.y+=10 }, 60);
+        GAME.player.setupUpdate("left", function(obj) { obj.spriteObj.x-=10 }, 60);
+        GAME.player.setupUpdate("right", function(obj) { obj.spriteObj.x+=10 }, 60);
 
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
@@ -45,8 +45,13 @@ GAME.State.add("main_menu", {
         }, function(ev) {
             GAME.player.stopUpdate("down");
         });
+
+        GAME.Key.add("Space", function(ev) {
+            GAME.State.set("demo");
+        });
     },
 
     destroy: function() {
+        GAME.Key.removeAll();
     }
 });

@@ -35,8 +35,13 @@ GAME.State.add("demo", {
             GAME.bg3.stopUpdate("scroll");
             GAME.player.startAnim("idle");
         });
+
+        GAME.Key.add("Space", function(ev) {
+            GAME.State.set("main_menu");
+        })
     },
 
     destroy: function() {
+        GAME.Key.removeAll();
     }
 });

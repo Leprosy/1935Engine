@@ -23,10 +23,16 @@ GAME.Key = (function() {
             // Run registered key handlers depending of the event generated(keyup, keydown)
             //console.log("GAME.Key: Registered key pressed", event);
             if (event.type === "keyup") {
-                keys[event.code][event.type]();
+                if (typeof keys[event.code][event.type] == "function") {
+                    keys[event.code][event.type]();
+                }
+
                 keys[event.code].pressed = false;
             } else if (event.type === "keydown" && !keys[event.code].pressed) {
-                keys[event.code][event.type]();
+                if (typeof keys[event.code][event.type] == "function") {
+                    keys[event.code][event.type]();
+                }
+
                 keys[event.code].pressed = true;
             }
 
@@ -49,8 +55,8 @@ GAME.Key = (function() {
 
         // Adds a key handler to the register
         add: function(code, handlerDown, handlerUp) {
-            if (typeof handlerDown !== "function" || typeof handlerUp !== "function") {
-                throw Error("GAME.Key: Invalid listener functions provided.");
+            if (typeof handlerDown !== "function") {
+                throw Error("GAME.Key: At least keydown handler listener functions should be provided.");
             }
 
             if (GAME.$.isEmptyObj(keys)) {

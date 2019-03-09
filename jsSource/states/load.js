@@ -19,11 +19,14 @@ GAME.State.add("load", {
                 throw Error("Load State: error loading resource", this, a, b, c);
             })
             .load(function() {
-                //GAME.State.set("main_menu");
-                GAME.State.set("demo");
+                GAME.Key.add("Space", function(ev) {
+                    GAME.State.set("demo");
+                });
+                //GAME.State.set("demo");
             });
 
     },
     destroy: function() {
+        GAME.Key.removeAll();
     }
 });

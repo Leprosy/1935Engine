@@ -205,10 +205,14 @@ GAME.Key = function() {
                 }
             }
             if (event.type === "keyup") {
-                keys[event.code][event.type]();
+                if (typeof keys[event.code][event.type] == "function") {
+                    keys[event.code][event.type]();
+                }
                 keys[event.code].pressed = false;
             } else if (event.type === "keydown" && !keys[event.code].pressed) {
-                keys[event.code][event.type]();
+                if (typeof keys[event.code][event.type] == "function") {
+                    keys[event.code][event.type]();
+                }
                 keys[event.code].pressed = true;
             }
             if (typeof post === "function") {
@@ -225,8 +229,8 @@ GAME.Key = function() {
             post = f;
         },
         add: function(code, handlerDown, handlerUp) {
-            if (typeof handlerDown !== "function" || typeof handlerUp !== "function") {
-                throw Error("GAME.Key: Invalid listener functions provided.");
+            if (typeof handlerDown !== "function") {
+                throw Error("GAME.Key: At least keydown handler listener functions should be provided.");
             }
             if (GAME.$.isEmptyObj(keys)) {
                 document.addEventListener("keydown", listener);
@@ -543,8 +547,13 @@ GAME.State.add("demo", {
             GAME.bg3.stopUpdate("scroll");
             GAME.player.startAnim("idle");
         });
+        GAME.Key.add("Space", function(ev) {
+            GAME.State.set("main_menu");
+        });
     },
-    destroy: function() {}
+    destroy: function() {
+        GAME.Key.removeAll();
+    }
 });
 
 GAME.State.add("load", {
@@ -556,10 +565,14 @@ GAME.State.add("load", {
         }).on("error", function(a, b, c) {
             throw Error("Load State: error loading resource", this, a, b, c);
         }).load(function() {
-            GAME.State.set("demo");
+            GAME.Key.add("Space", function(ev) {
+                GAME.State.set("demo");
+            });
         });
     },
-    destroy: function() {}
+    destroy: function() {
+        GAME.Key.removeAll();
+    }
 });
 
 GAME.State.add("main_menu", {
@@ -570,16 +583,16 @@ GAME.State.add("main_menu", {
         GAME.player.setupAnim("left", [ 2, 3 ], 10);
         GAME.player.setupAnim("right", [ 4, 5 ], 10);
         GAME.player.setupUpdate("up", function(obj) {
-            obj.spriteObj.y -= 5;
+            obj.spriteObj.y -= 10;
         }, 60);
         GAME.player.setupUpdate("down", function(obj) {
-            obj.spriteObj.y += 5;
+            obj.spriteObj.y += 10;
         }, 60);
         GAME.player.setupUpdate("left", function(obj) {
-            obj.spriteObj.x -= 5;
+            obj.spriteObj.x -= 10;
         }, 60);
         GAME.player.setupUpdate("right", function(obj) {
-            obj.spriteObj.x += 5;
+            obj.spriteObj.x += 10;
         }, 60);
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
@@ -608,6 +621,11 @@ GAME.State.add("main_menu", {
         }, function(ev) {
             GAME.player.stopUpdate("down");
         });
+        GAME.Key.add("Space", function(ev) {
+            GAME.State.set("demo");
+        });
     },
-    destroy: function() {}
+    destroy: function() {
+        GAME.Key.removeAll();
+    }
 });
