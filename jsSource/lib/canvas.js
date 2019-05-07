@@ -58,7 +58,7 @@ GAME.Canvas = (function() {
 
         cancelRefreshCall: function(id) {
             var call = refreshCalls.filter(obj => {
-                return obj.id === id
+                return obj.id === id;
             });
 
             if (call.length > 0) {
@@ -69,7 +69,14 @@ GAME.Canvas = (function() {
 
         getRefreshCallList: function() {
             return refreshCalls;
+        },
+
+        clear: function() {
+            pixiApp.stage.removeChildren();
+        },
+
+        getApp: function() {
+            return pixiApp;
         }
     };
 })();
-
