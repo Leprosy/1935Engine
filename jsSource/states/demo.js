@@ -38,10 +38,11 @@ GAME.State.add("demo", {
 
         GAME.Key.add("Space", function(ev) {
             GAME.State.set("main_menu");
-        })
+        });
     },
 
     destroy: function() {
+        GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
 });

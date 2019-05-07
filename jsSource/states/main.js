@@ -52,6 +52,7 @@ GAME.State.add("main_menu", {
     },
 
     destroy: function() {
+        GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
 });
