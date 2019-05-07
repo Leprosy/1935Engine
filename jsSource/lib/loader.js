@@ -19,13 +19,25 @@ GAME.Load = (function() {
                 PIXI.loader.add(baseName(obj.files[i]), obj.files[i]);
             }
 
-            PIXI.loader.on("progress", function(a, b, c) {
-                console.debug("Load State: Progress", this, a, b, c);
-                obj.progress(a, b, c);
-            }).on("error", function(a, b, c) {
-                obj.error(a, b, c);
-                throw Error("Load State: error loading resource", this, a, b, c);
-            }).load(obj.finish());
+            PIXI.loader.on("progress", function(ev, elem) {
+                console.debug("Load State: Progress", this, ev, elem);
+
+                if (typeof obj.progress === "function") {
+                    obj.progress(ev, elem);
+                }
+            }).on("error", function(ev, elem) {
+                if (typeof obj.error === "function") {
+                    obj.error(ev, elem);
+                }
+
+                throw Error("Load State: error loading resource", this, ev, elem);
+            }).load(function(ev, list) {
+                console.debug("Load State: Finish", this, ev, list);
+
+                if (typeof obj.finish === "function") {
+                    obj.finish(ev, list);
+                }
+            });
         },
     };
 })();
