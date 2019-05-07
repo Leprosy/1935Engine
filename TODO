@@ -1,6 +1,5 @@
 General
-    - Check monster algorithm to attack in the source code
-    -
+
 State
     - Reset key handlers? Canvas? Something else?
 Canvas
