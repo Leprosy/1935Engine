@@ -28,11 +28,21 @@ GAME.Canvas = (function() {
             requestAnimationFrame(refreshCycle);
         },
 
+        addText: function(text, x, y, style) {
+            style = new PIXI.TextStyle(style);
+            text = new PIXI.Text(text, style);
+            text.x = x;
+            text.y = y;
+            pixiApp.stage.addChild(text);
+            return text;
+        },
+
         addSprite: function(texture) {
             var sprite = new PIXI.Sprite(texture);
             pixiApp.stage.addChild(sprite);
             return sprite;
         },
+
         addTilingSprite: function(texture, width, height) {
             var tsprite = new PIXI.TilingSprite(texture, width, height);
             pixiApp.stage.addChild(tsprite);
