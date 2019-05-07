@@ -132,7 +132,6 @@ GAME.Ent = class {
         return this;
     }
     attr(obj) {
-        console.log("adding attrs", obj);
         return this;
     }
     addCmps(keyList) {
@@ -206,78 +205,59 @@ GAME.Components = {};
 
 GAME.Key = function() {
     var keys = {};
-    var pre = null;
-    var post = null;
+    var pressed = [];
     var listener = function(event) {
-        if (keys.hasOwnProperty(event.code)) {
-            if (typeof pre === "function") {
-                console.log("GAME.Key: Pre-call method.");
-                var result = pre(event);
-                if (!result) {
-                    console.log("GAME.Key: Handler aborted by the pre-call method.");
-                    return;
-                }
+        if (event.type === "keydown") {
+            if (pressed.indexOf(event.code) < 0) {
+                pressed.push(event.code);
             }
-            if (event.type === "keyup") {
-                if (typeof keys[event.code][event.type] == "function") {
-                    keys[event.code][event.type]();
-                }
-                keys[event.code].pressed = false;
-            } else if (event.type === "keydown" && !keys[event.code].pressed) {
-                if (typeof keys[event.code][event.type] == "function") {
-                    keys[event.code][event.type]();
-                }
-                keys[event.code].pressed = true;
+            if (keys.hasOwnProperty(event.code) && typeof keys[event.code].keydown === "function") {
+                keys[event.code].keydown(event);
             }
-            if (typeof post === "function") {
-                console.log("GAME.Key: Post-call method.");
-                post(event);
+        }
+        if (event.type === "keyup") {
+            if (pressed.indexOf(event.code) >= 0) {
+                pressed.splice(pressed.indexOf(event.code), 1);
+            }
+            if (keys.hasOwnProperty(event.code) && typeof keys[event.code].keyup === "function") {
+                keys[event.code].keyup(event);
             }
         }
     };
     return {
-        setPre: function(f) {
-            pre = f;
+        init: function() {
+            document.addEventListener("keydown", listener);
+            document.addEventListener("keyup", listener);
+            console.debug("GAME.Key: Listener registered.");
         },
-        setPost: function(f) {
-            post = f;
+        end: function() {
+            document.removeEventListener("keydown", listener);
+            document.removeEventListener("keyup", listener);
+            console.debug("GAME.Key: No more handlers, removing listener.");
         },
         add: function(code, handlerDown, handlerUp) {
             if (typeof handlerDown !== "function") {
                 throw Error("GAME.Key: At least keydown handler listener functions should be provided.");
             }
-            if (GAME.$.isEmptyObj(keys)) {
-                document.addEventListener("keydown", listener);
-                document.addEventListener("keyup", listener);
-                console.log("GAME.Key: Listener registered. Adding the key too.", code);
-            } else {
-                console.log("GAME.Key: Already registered the listener, just adding the key.", code);
-            }
             keys[code] = {
                 keydown: handlerDown,
-                keyup: handlerUp,
-                pressed: false
+                keyup: handlerUp
             };
         },
         remove: function(code) {
-            console.log("GAME.Key: Removing handler", code);
             if (keys.hasOwnProperty(code) >= 0) {
                 delete keys[code];
-                if (GAME.$.isEmptyObj(keys)) {
-                    console.log("GAME.Key: No more handlers, removing listener.");
-                    document.removeEventListener("keydown", listener);
-                    document.removeEventListener("keyup", listener);
-                }
             } else {
                 throw Error("GAME.Key: Code doesn't have an event attached.", code);
             }
         },
         removeAll: function() {
-            this.setPre(null);
-            this.setPost(null);
             for (var key in keys) {
                 this.remove(key);
             }
+        },
+        isPressed: function(code) {
+            return pressed.indexOf(code) >= 0;
         }
     };
 }();
@@ -330,13 +310,13 @@ GAME.State = function() {
         set: function(key, scope) {
             if (typeof states[key] !== "undefined") {
                 if (GAME.$.isObj(currentState) && typeof currentState.destroy === "function") {
-                    console.log("%cGAME.State." + currentState._id + " ended", "font-weight: bold");
+                    console.debug("%cGAME.State." + currentState._id + " ended", "font-weight: bold");
                     currentState.destroy();
                 }
                 currentState = states[key];
                 if (typeof currentState.init === "function") {
                     currentState.scope = scope;
-                    console.log("%cGAME.State." + key + " started", "font-weight: bold");
+                    console.debug("%cGAME.State." + key + " started", "font-weight: bold");
                     currentState.init();
                 }
             } else {
@@ -439,6 +419,7 @@ GAME.Components.actor = {
     animations: {},
     updated: {},
     currentAnimation: null,
+    currentAnimationId: null,
     actor: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
@@ -461,9 +442,13 @@ GAME.Components.actor = {
         };
     },
     startAnim: function(name) {
+        if (this.currentAnimation === name) {
+            return;
+        }
         this.stopAnim();
+        this.currentAnimation = name;
         var _this = this;
-        this.currentAnimation = GAME.Canvas.registerRefreshCall(function() {
+        this.currentAnimationId = GAME.Canvas.registerRefreshCall(function() {
             var frames = _this.animations[name].frames;
             if (_this.animations[name].index >= frames.length) {
                 _this.animations[name].index = 0;
@@ -472,7 +457,7 @@ GAME.Components.actor = {
         }, this.animations[name].fps);
     },
     stopAnim: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentAnimation);
+        GAME.Canvas.cancelRefreshCall(this.currentAnimationId);
     }
 };
 
@@ -548,7 +533,6 @@ GAME.Components.update = {
         }
         if (!this.updates.hasOwnProperty(name)) {
             throw Error(`Update Component: no update call called ${name}`);
-            return;
         }
         var _this = this;
         this.currentUpdates[name] = GAME.Canvas.registerRefreshCall(function() {
@@ -608,6 +592,7 @@ GAME.State.add("load", {
     name: "Loading",
     init: function() {
         GAME.Canvas.init($("#screen")[0]);
+        GAME.Key.init();
         var text = GAME.Canvas.addText("Loading...", 40, 40, {
             fontFamily: "Arial",
             fontSize: 36,
@@ -627,7 +612,7 @@ GAME.State.add("load", {
             finish: function() {
                 text.text = "Press Space";
                 GAME.Key.add("Space", function(ev) {
-                    GAME.State.set("demo");
+                    GAME.State.set("main_menu");
                 });
             }
         });
@@ -645,47 +630,24 @@ GAME.State.add("main_menu", {
         GAME.player.setupAnim("idle", [ 0, 1 ], 10);
         GAME.player.setupAnim("left", [ 2, 3 ], 10);
         GAME.player.setupAnim("right", [ 4, 5 ], 10);
-        GAME.player.setupUpdate("up", function(obj) {
-            obj.spriteObj.y -= 10;
-        }, 60);
-        GAME.player.setupUpdate("down", function(obj) {
-            obj.spriteObj.y += 10;
-        }, 60);
-        GAME.player.setupUpdate("left", function(obj) {
-            obj.spriteObj.x -= 10;
-        }, 60);
-        GAME.player.setupUpdate("right", function(obj) {
-            obj.spriteObj.x += 10;
+        GAME.player.setupUpdate("main", function(obj) {
+            var speed = 10;
+            obj.spriteObj.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
+            obj.spriteObj.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
+            if (GAME.Key.isPressed("ArrowLeft")) {
+                GAME.player.startAnim("left");
+            } else if (GAME.Key.isPressed("ArrowRight")) {
+                GAME.player.startAnim("right");
+            } else {
+                GAME.player.startAnim("idle");
+            }
         }, 60);
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
         GAME.player.startAnim("idle");
-        GAME.Key.add("ArrowRight", function(ev) {
-            GAME.player.startAnim("right");
-            GAME.player.startUpdate("right");
-        }, function(ev) {
-            GAME.player.startAnim("idle");
-            GAME.player.stopUpdate("right");
-        });
-        GAME.Key.add("ArrowLeft", function(ev) {
-            GAME.player.startAnim("left");
-            GAME.player.startUpdate("left");
-        }, function(ev) {
-            GAME.player.startAnim("idle");
-            GAME.player.stopUpdate("left");
-        });
-        GAME.Key.add("ArrowUp", function(ev) {
-            GAME.player.startUpdate("up");
-        }, function(ev) {
-            GAME.player.stopUpdate("up");
-        });
-        GAME.Key.add("ArrowDown", function(ev) {
-            GAME.player.startUpdate("down");
-        }, function(ev) {
-            GAME.player.stopUpdate("down");
-        });
+        GAME.player.startUpdate("main");
         GAME.Key.add("Space", function(ev) {
-            GAME.State.set("demo");
+            GAME.State.set("load");
         });
     },
     destroy: function() {

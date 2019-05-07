@@ -3,8 +3,9 @@ GAME.State.add("load", {
     name: "Loading",
 
     init: function() {
-        // Init canvas
+        // Init some systems
         GAME.Canvas.init($("#screen")[0]);
+        GAME.Key.init();
 
         // A label
         var text = GAME.Canvas.addText("Loading...", 40, 40, {
@@ -28,7 +29,7 @@ GAME.State.add("load", {
                             text.text = "Press Space";
 
                             GAME.Key.add("Space", function(ev) {
-                                GAME.State.set("demo");
+                                GAME.State.set("main_menu");
                             });
                         }});
     },

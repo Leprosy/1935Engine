@@ -6,48 +6,32 @@ GAME.State.add("main_menu", {
         GAME.player = new GAME.Ent("player", ["actor", "update"])
                               .actor(GAME.Canvas.getTxt("player"), 50, 40); // TODO: pass only the name of the txt resource?
 
+        // Animations and updates
         GAME.player.setupAnim("idle", [0, 1], 10);
         GAME.player.setupAnim("left", [2, 3], 10);
         GAME.player.setupAnim("right", [4, 5], 10);
-        GAME.player.setupUpdate("up", function(obj) { obj.spriteObj.y-=10 }, 60);
-        GAME.player.setupUpdate("down", function(obj) { obj.spriteObj.y+=10 }, 60);
-        GAME.player.setupUpdate("left", function(obj) { obj.spriteObj.x-=10 }, 60);
-        GAME.player.setupUpdate("right", function(obj) { obj.spriteObj.x+=10 }, 60);
+        GAME.player.setupUpdate("main", function(obj) {
+            var speed = 10;
+            obj.spriteObj.y += (-speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown"));
+            obj.spriteObj.x += (-speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight"));
 
+            if (GAME.Key.isPressed("ArrowLeft")) {
+                GAME.player.startAnim("left");
+            } else if(GAME.Key.isPressed("ArrowRight")) {
+                GAME.player.startAnim("right");
+            } else {
+                GAME.player.startAnim("idle");
+            }
+        }, 60);
+
+        // Start state
         GAME.player.spriteObj.y = 450;
         GAME.player.spriteObj.x = 300;
         GAME.player.startAnim("idle");
-
-        GAME.Key.add("ArrowRight", function(ev) {
-            GAME.player.startAnim("right");
-            GAME.player.startUpdate("right");
-        }, function(ev) {
-            GAME.player.startAnim("idle");
-            GAME.player.stopUpdate("right");
-        });
-
-        GAME.Key.add("ArrowLeft", function(ev) {
-            GAME.player.startAnim("left");
-            GAME.player.startUpdate("left");
-        }, function(ev) {
-            GAME.player.startAnim("idle");
-            GAME.player.stopUpdate("left");
-        });
-
-        GAME.Key.add("ArrowUp", function(ev) {
-            GAME.player.startUpdate("up");
-        }, function(ev) {
-            GAME.player.stopUpdate("up");
-        });
-
-        GAME.Key.add("ArrowDown", function(ev) {
-            GAME.player.startUpdate("down");
-        }, function(ev) {
-            GAME.player.stopUpdate("down");
-        });
+        GAME.player.startUpdate("main");
 
         GAME.Key.add("Space", function(ev) {
-            GAME.State.set("demo");
+            GAME.State.set("load");
         });
     },
 

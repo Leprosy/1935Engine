@@ -3,92 +3,71 @@
  */
 GAME.Key = (function() {
     var keys = {};
-    var pre = null;
-    var post = null;
+    var pressed = [];
+
     var listener = function(event) {
-        if (keys.hasOwnProperty(event.code)) {
-            // Pre call
-            if (typeof pre === "function") {
-                console.debug("GAME.Key: Pre-call method.");
-                var result = pre(event);
-
-                if (!result) {
-                    console.debug("GAME.Key: Handler aborted by the pre-call method.");
-                    return; // If pre-call returns false, the rest of the handler is not executed.
-                }
+        if (event.type === "keydown") {
+            if (pressed.indexOf(event.code) < 0) {
+                pressed.push(event.code);
             }
 
-            // Run registered key handlers depending of the event generated(keyup, keydown)
-            if (event.type === "keyup") {
-                if (typeof keys[event.code][event.type] == "function") {
-                    keys[event.code][event.type]();
-                }
+            if (keys.hasOwnProperty(event.code) && typeof keys[event.code].keydown === "function") {
+                keys[event.code].keydown(event);
+            }
+        }
 
-                keys[event.code].pressed = false;
-            } else if (event.type === "keydown" && !keys[event.code].pressed) {
-                if (typeof keys[event.code][event.type] == "function") {
-                    keys[event.code][event.type]();
-                }
-
-                keys[event.code].pressed = true;
+        if (event.type === "keyup") {
+            if (pressed.indexOf(event.code) >= 0) {
+                pressed.splice(pressed.indexOf(event.code), 1);
             }
 
-            // Post call
-            if (typeof post === "function") {
-                console.debug("GAME.Key: Post-call method.");
-                post(event);
+            if (keys.hasOwnProperty(event.code) && typeof keys[event.code].keyup === "function") {
+                keys[event.code].keyup(event);
             }
         }
     };
 
     return {
-        setPre: function(f) {
-            pre = f;
+        init: function() {
+            document.addEventListener("keydown", listener);
+            document.addEventListener("keyup", listener);
+            console.debug("GAME.Key: Listener registered.");
         },
 
-        setPost: function(f) {
-            post = f;
+        end: function() {
+            document.removeEventListener("keydown", listener);
+            document.removeEventListener("keyup", listener);
+            console.debug("GAME.Key: No more handlers, removing listener.");
         },
 
-        // Adds a key handler to the register
         add: function(code, handlerDown, handlerUp) {
             if (typeof handlerDown !== "function") {
                 throw Error("GAME.Key: At least keydown handler listener functions should be provided.");
             }
 
-            if (GAME.$.isEmptyObj(keys)) {
-                document.addEventListener("keydown", listener);
-                document.addEventListener("keyup", listener);
-                console.debug("GAME.Key: Listener registered. Adding the key too.", code);
-            } else {
-                console.debug("GAME.Key: Already registered the listener, just adding the key.", code);
-            }
-
-            keys[code] = {keydown: handlerDown, keyup: handlerUp, pressed: false};
+            keys[code] = {
+                keydown: handlerDown,
+                keyup: handlerUp
+            };
         },
 
         // Remove key handlers
         remove: function(code) {
-            console.debug("GAME.Key: Removing handler", code);
             if (keys.hasOwnProperty(code) >= 0) {
                 delete keys[code];
-
-                if (GAME.$.isEmptyObj(keys)) {
-                    console.debug("GAME.Key: No more handlers, removing listener.");
-                    document.removeEventListener("keydown", listener);
-                    document.removeEventListener("keyup", listener);
-                }
             } else {
                 throw Error("GAME.Key: Code doesn't have an event attached.", code);
             }
         },
-        removeAll: function() {
-            this.setPre(null);
-            this.setPost(null);
 
+        removeAll: function() {
             for (var key in keys) {
                 this.remove(key);
             }
+        },
+
+        isPressed: function(code) {
+            return pressed.indexOf(code) >= 0;
         }
     };
 })();
