@@ -22,7 +22,6 @@ GAME.Components.update = {
 
         if (!this.updates.hasOwnProperty(name)) {
             throw Error(`Update Component: no update call called ${name}`);
-            return;
         }
 
         var _this = this;
@@ -41,4 +40,4 @@ GAME.Components.update = {
         GAME.Canvas.cancelRefreshCall(this.currentUpdates[name]);
         delete this.currentUpdates[name];
     },
-}
+};
