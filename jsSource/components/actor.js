@@ -20,9 +20,9 @@ GAME.Components.actor = {
         this.height = height;
         this.width = width;
         this.setFrame(0);
-        this.spriteObj = GAME.Canvas.addSprite(this.texture)
+        this.spriteObj = GAME.Canvas.addSprite(this.texture);
 
-        return this
+        return this;
     },
 
     /**
@@ -43,7 +43,7 @@ GAME.Components.actor = {
             frames: frames,
             fps: fps,
             index: 0
-        }
+        };
     },
 
     startAnim: function(name) {
@@ -58,7 +58,7 @@ GAME.Components.actor = {
             }
 
             _this.setFrame(frames[_this.animations[name].index++]);
-        }, this.animations[name].fps)
+        }, this.animations[name].fps);
     },
 
     /**
@@ -67,4 +67,4 @@ GAME.Components.actor = {
     stopAnim: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimation);
     },
-}
+};

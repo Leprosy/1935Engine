@@ -27,5 +27,5 @@ GAME.Load = (function() {
                 throw Error("Load State: error loading resource", this, a, b, c);
             }).load(obj.finish());
         },
-    }
+    };
 })();
