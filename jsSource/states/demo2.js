@@ -21,8 +21,8 @@ GAME.State.add("demo2", {
         GAME.player2.spriteObj.y = 450;
         GAME.player2.spriteObj.x = 300;
         GAME.player2.startAnim("idle");
-        //GAME.bg1.spriteObj.filters = [new PIXI.filters.BlurFilter(3)];
-        //GAME.bg2.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];
+        GAME.bg1.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];
+        GAME.bg2.spriteObj.filters = [new PIXI.filters.BlurFilter(1)];
 
         GAME.Key.add("ArrowRight", function(ev) {
             GAME.bg1.startUpdate("scroll");
