@@ -47,7 +47,15 @@ GAME.Components.actor = {
         };
     },
 
+    /**
+     * Starts an animation
+     */
     startAnim: function(name) {
+        // Don't do anything if it's the current animation
+        if (this.currentAnimation === name) {
+            return;
+        }
+
         this.stopAnim();
         this.currentAnimation = name;
         var _this = this;
