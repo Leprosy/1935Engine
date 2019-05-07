@@ -546,15 +546,48 @@ GAME.Components.update = {
     }
 };
 
-GAME.State.add("demo", {
-    name: "Demo",
+GAME.State.add("demo1", {
+    name: "Demo 1",
+    init: function() {
+        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("player"), 50, 40);
+        GAME.player.setupAnim("idle", [ 0, 1 ], 10);
+        GAME.player.setupAnim("left", [ 2, 3 ], 10);
+        GAME.player.setupAnim("right", [ 4, 5 ], 10);
+        GAME.player.setupUpdate("main", function(obj) {
+            var speed = 10;
+            obj.spriteObj.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
+            obj.spriteObj.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
+            if (GAME.Key.isPressed("ArrowLeft")) {
+                GAME.player.startAnim("left");
+            } else if (GAME.Key.isPressed("ArrowRight")) {
+                GAME.player.startAnim("right");
+            } else {
+                GAME.player.startAnim("idle");
+            }
+        }, 60);
+        GAME.player.spriteObj.y = 450;
+        GAME.player.spriteObj.x = 300;
+        GAME.player.startAnim("idle");
+        GAME.player.startUpdate("main");
+        GAME.Key.add("Space", function(ev) {
+            GAME.State.set("main_menu");
+        });
+    },
+    destroy: function() {
+        GAME.Canvas.clear();
+        GAME.Key.removeAll();
+    }
+});
+
+GAME.State.add("demo2", {
+    name: "Demo 2",
     init: function() {
         GAME.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-back"), 800, 600);
         GAME.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
         GAME.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
-        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("demo-player"), 100, 100);
-        GAME.player.setupAnim("idle", [ 10 ], 60);
-        GAME.player.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
+        GAME.player2 = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("demo-player"), 100, 100);
+        GAME.player2.setupAnim("idle", [ 10 ], 60);
+        GAME.player2.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
         GAME.bg1.setupUpdate("scroll", function(bg) {
             bg.scrollX(-1);
         }, 60);
@@ -564,19 +597,19 @@ GAME.State.add("demo", {
         GAME.bg3.setupUpdate("scroll", function(bg) {
             bg.scrollX(-10);
         }, 60);
-        GAME.player.spriteObj.y = 450;
-        GAME.player.spriteObj.x = 300;
-        GAME.player.startAnim("idle");
+        GAME.player2.spriteObj.y = 450;
+        GAME.player2.spriteObj.x = 300;
+        GAME.player2.startAnim("idle");
         GAME.Key.add("ArrowRight", function(ev) {
             GAME.bg1.startUpdate("scroll");
             GAME.bg2.startUpdate("scroll");
             GAME.bg3.startUpdate("scroll");
-            GAME.player.startAnim("walk");
+            GAME.player2.startAnim("walk");
         }, function(ev) {
             GAME.bg1.stopUpdate("scroll");
             GAME.bg2.stopUpdate("scroll");
             GAME.bg3.stopUpdate("scroll");
-            GAME.player.startAnim("idle");
+            GAME.player2.startAnim("idle");
         });
         GAME.Key.add("Space", function(ev) {
             GAME.State.set("main_menu");
@@ -626,28 +659,31 @@ GAME.State.add("load", {
 GAME.State.add("main_menu", {
     name: "Main Menu",
     init: function() {
-        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("player"), 50, 40);
-        GAME.player.setupAnim("idle", [ 0, 1 ], 10);
-        GAME.player.setupAnim("left", [ 2, 3 ], 10);
-        GAME.player.setupAnim("right", [ 4, 5 ], 10);
-        GAME.player.setupUpdate("main", function(obj) {
-            var speed = 10;
-            obj.spriteObj.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
-            obj.spriteObj.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
-            if (GAME.Key.isPressed("ArrowLeft")) {
-                GAME.player.startAnim("left");
-            } else if (GAME.Key.isPressed("ArrowRight")) {
-                GAME.player.startAnim("right");
-            } else {
-                GAME.player.startAnim("idle");
-            }
-        }, 60);
-        GAME.player.spriteObj.y = 450;
-        GAME.player.spriteObj.x = 300;
-        GAME.player.startAnim("idle");
-        GAME.player.startUpdate("main");
-        GAME.Key.add("Space", function(ev) {
-            GAME.State.set("load");
+        var style = {
+            fontFamily: "Gamefont",
+            fontSize: 36,
+            fontWeight: "bold",
+            fill: [ "#cccccc", "#000000" ],
+            stroke: "#ffffff",
+            strokeThickness: 2
+        };
+        GAME.Canvas.addText("1935Engine demo", 40, 40, style);
+        GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 80, style);
+        var selected = 1;
+        var text1 = GAME.Canvas.addText("Run Demo 1 *", 40, 150, style);
+        var text2 = GAME.Canvas.addText("Run Demo 2", 40, 190, style);
+        GAME.Key.add("ArrowUp", function() {
+            selected = 1;
+            text1.text = "Run Demo 1 *";
+            text2.text = "Run Demo 2";
+        });
+        GAME.Key.add("ArrowDown", function() {
+            selected = 2;
+            text1.text = "Run Demo 1";
+            text2.text = "Run Demo 2 *";
+        });
+        GAME.Key.add("Space", function() {
+            GAME.State.set("demo" + selected);
         });
     },
     destroy: function() {

@@ -3,35 +3,33 @@ GAME.State.add("main_menu", {
     name: "Main Menu",
 
     init: function() {
-        GAME.player = new GAME.Ent("player", ["actor", "update"])
-                              .actor(GAME.Canvas.getTxt("player"), 50, 40); // TODO: pass only the name of the txt resource?
+        var style = {
+            fontFamily: 'Arial',
+            fontSize: 36,
+            fontWeight: 'bold',
+            fill: ['#cccccc', '#000000'], // gradient
+            stroke: '#ffffff',
+            strokeThickness: 2
+        };
 
-        // Animations and updates
-        GAME.player.setupAnim("idle", [0, 1], 10);
-        GAME.player.setupAnim("left", [2, 3], 10);
-        GAME.player.setupAnim("right", [4, 5], 10);
-        GAME.player.setupUpdate("main", function(obj) {
-            var speed = 10;
-            obj.spriteObj.y += (-speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown"));
-            obj.spriteObj.x += (-speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight"));
+        GAME.Canvas.addText("1935Engine demo", 40, 40, style);
+        GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 80, style);
+        var selected = 1;
+        var text1 = GAME.Canvas.addText("Run Demo 1 *", 40, 150, style);
+        var text2 = GAME.Canvas.addText("Run Demo 2", 40, 190, style);
 
-            if (GAME.Key.isPressed("ArrowLeft")) {
-                GAME.player.startAnim("left");
-            } else if(GAME.Key.isPressed("ArrowRight")) {
-                GAME.player.startAnim("right");
-            } else {
-                GAME.player.startAnim("idle");
-            }
-        }, 60);
-
-        // Start state
-        GAME.player.spriteObj.y = 450;
-        GAME.player.spriteObj.x = 300;
-        GAME.player.startAnim("idle");
-        GAME.player.startUpdate("main");
-
-        GAME.Key.add("Space", function(ev) {
-            GAME.State.set("load");
+        GAME.Key.add("ArrowUp", function() {
+            selected = 1;
+            text1.text = "Run Demo 1 *";
+            text2.text = "Run Demo 2";
+        });
+        GAME.Key.add("ArrowDown", function() {
+            selected = 2;
+            text1.text = "Run Demo 1";
+            text2.text = "Run Demo 2 *";
+        });
+        GAME.Key.add("Space", function() {
+            GAME.State.set("demo" + selected);
         });
     },
 
