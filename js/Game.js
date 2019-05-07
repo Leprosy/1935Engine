@@ -71,6 +71,14 @@ GAME.Canvas = function() {
             DOMelem.appendChild(pixiApp.view);
             requestAnimationFrame(refreshCycle);
         },
+        addText: function(text, x, y, style) {
+            style = new PIXI.TextStyle(style);
+            text = new PIXI.Text(text, style);
+            text.x = x;
+            text.y = y;
+            pixiApp.stage.addChild(text);
+            return text;
+        },
         addSprite: function(texture) {
             var sprite = new PIXI.Sprite(texture);
             pixiApp.stage.addChild(sprite);
@@ -287,13 +295,22 @@ GAME.Load = function() {
             for (var i = 0; i < obj.files.length; ++i) {
                 PIXI.loader.add(baseName(obj.files[i]), obj.files[i]);
             }
-            PIXI.loader.on("progress", function(a, b, c) {
-                console.debug("Load State: Progress", this, a, b, c);
-                obj.progress(a, b, c);
-            }).on("error", function(a, b, c) {
-                obj.error(a, b, c);
-                throw Error("Load State: error loading resource", this, a, b, c);
-            }).load(obj.finish());
+            PIXI.loader.on("progress", function(ev, elem) {
+                console.debug("Load State: Progress", this, ev, elem);
+                if (typeof obj.progress === "function") {
+                    obj.progress(ev, elem);
+                }
+            }).on("error", function(ev, elem) {
+                if (typeof obj.error === "function") {
+                    obj.error(ev, elem);
+                }
+                throw Error("Load State: error loading resource", this, ev, elem);
+            }).load(function(ev, list) {
+                console.debug("Load State: Finish", this, ev, list);
+                if (typeof obj.finish === "function") {
+                    obj.finish(ev, list);
+                }
+            });
         }
     };
 }();
@@ -475,6 +492,46 @@ GAME.Components.bg = {
     }
 };
 
+GAME.Components.label = {
+    spriteObj: null,
+    x: 0,
+    y: 0,
+    text: "",
+    label: function(text, x, y) {
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        return this;
+    },
+    setFrame: function(fr) {
+        var x = fr * this.width % this.texture.baseTexture.width;
+        var y = Math.floor(fr * this.width / this.texture.baseTexture.width) * this.height;
+        this.frame = fr;
+        this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
+    },
+    setupAnim: function(name, frames, fps) {
+        this.animations[name] = {
+            frames: frames,
+            fps: fps,
+            index: 0
+        };
+    },
+    startAnim: function(name) {
+        this.stopAnim();
+        var _this = this;
+        this.currentAnimation = GAME.Canvas.registerRefreshCall(function() {
+            var frames = _this.animations[name].frames;
+            if (_this.animations[name].index >= frames.length) {
+                _this.animations[name].index = 0;
+            }
+            _this.setFrame(frames[_this.animations[name].index++]);
+        }, this.animations[name].fps);
+    },
+    stopAnim: function() {
+        GAME.Canvas.cancelRefreshCall(this.currentAnimation);
+    }
+};
+
 GAME.Components.pos = {
     x: 0,
     y: 0,
@@ -591,15 +648,24 @@ GAME.State.add("load", {
     name: "Loading",
     init: function() {
         GAME.Canvas.init($("#screen")[0]);
+        var text = GAME.Canvas.addText("Loading...", 40, 40, {
+            fontFamily: "Arial",
+            fontSize: 36,
+            fontWeight: "bold",
+            fill: [ "#cccccc", "#000000" ],
+            stroke: "#ffffff",
+            strokeThickness: 2
+        });
         GAME.Load.list({
             files: [ "img/player.png", "img/demo-player.png", "img/demo-bg-back.png", "img/demo-bg-middle.png", "img/demo-bg-front.png" ],
-            progress: function(a, b, c) {
-                console.debug("loading...");
+            progress: function(ev, elem) {
+                text.text = `Loading...${ev.progress}%`;
             },
             error: function(a, b, c) {
-                console.debug("error loading...");
+                console.debug("Error loading...");
             },
             finish: function() {
+                text.text = "Press Space";
                 GAME.Key.add("Space", function(ev) {
                     GAME.State.set("demo");
                 });
