@@ -105,6 +105,12 @@ GAME.Canvas = function() {
         },
         getRefreshCallList: function() {
             return refreshCalls;
+        },
+        clear: function() {
+            pixiApp.stage.removeChildren();
+        },
+        getApp: function() {
+            return pixiApp;
         }
     };
 }();
@@ -264,6 +270,30 @@ GAME.Key = function() {
             for (var key in keys) {
                 this.remove(key);
             }
+        }
+    };
+}();
+
+GAME.Load = function() {
+    function baseName(str) {
+        var base = new String(str).substring(str.lastIndexOf("/") + 1);
+        if (base.lastIndexOf(".") != -1) {
+            base = base.substring(0, base.lastIndexOf("."));
+        }
+        return base;
+    }
+    return {
+        list: function(obj) {
+            for (var i = 0; i < obj.files.length; ++i) {
+                PIXI.loader.add(baseName(obj.files[i]), obj.files[i]);
+            }
+            PIXI.loader.on("progress", function(a, b, c) {
+                console.debug("Load State: Progress", this, a, b, c);
+                obj.progress(a, b, c);
+            }).on("error", function(a, b, c) {
+                obj.error(a, b, c);
+                throw Error("Load State: error loading resource", this, a, b, c);
+            }).load(obj.finish());
         }
     };
 }();
@@ -552,6 +582,7 @@ GAME.State.add("demo", {
         });
     },
     destroy: function() {
+        GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
 });
@@ -560,14 +591,19 @@ GAME.State.add("load", {
     name: "Loading",
     init: function() {
         GAME.Canvas.init($("#screen")[0]);
-        PIXI.loader.add("player", "img/player.png").add("demo-player", "img/demo-player.png").add("demo-bg-back", "img/demo-bg-back.png").add("demo-bg-middle", "img/demo-bg-middle.png").add("demo-bg-front", "img/demo-bg-front.png").on("progress", function(a, b, c) {
-            console.debug("Load State: Progress", this, a, b, c);
-        }).on("error", function(a, b, c) {
-            throw Error("Load State: error loading resource", this, a, b, c);
-        }).load(function() {
-            GAME.Key.add("Space", function(ev) {
-                GAME.State.set("demo");
-            });
+        GAME.Load.list({
+            files: [ "img/player.png", "img/demo-player.png", "img/demo-bg-back.png", "img/demo-bg-middle.png", "img/demo-bg-front.png" ],
+            progress: function(a, b, c) {
+                console.debug("loading...");
+            },
+            error: function(a, b, c) {
+                console.debug("error loading...");
+            },
+            finish: function() {
+                GAME.Key.add("Space", function(ev) {
+                    GAME.State.set("demo");
+                });
+            }
         });
     },
     destroy: function() {
@@ -626,6 +662,7 @@ GAME.State.add("main_menu", {
         });
     },
     destroy: function() {
+        GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
 });
