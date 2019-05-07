@@ -62,9 +62,9 @@ GAME.Key = (function() {
             if (GAME.$.isEmptyObj(keys)) {
                 document.addEventListener("keydown", listener);
                 document.addEventListener("keyup", listener);
-                console.log("GAME.Key: Listener registered. Adding the key too.", code)
+                console.debug("GAME.Key: Listener registered. Adding the key too.", code);
             } else {
-                console.log("GAME.Key: Already registered the listener, just adding the key.", code)
+                console.debug("GAME.Key: Already registered the listener, just adding the key.", code);
             }
 
             keys[code] = {keydown: handlerDown, keyup: handlerUp, pressed: false};
@@ -72,7 +72,7 @@ GAME.Key = (function() {
 
         // Remove key handlers
         remove: function(code) {
-            console.log("GAME.Key: Removing handler", code)
+            console.debug("GAME.Key: Removing handler", code);
             if (keys.hasOwnProperty(code) >= 0) {
                 delete keys[code];
 
@@ -93,7 +93,7 @@ GAME.Key = (function() {
                 this.remove(key);
             }
         }
-    }
+    };
 })();
 
 /**
