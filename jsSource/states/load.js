@@ -34,6 +34,7 @@ GAME.State.add("load", {
     },
 
     destroy: function() {
+        GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
 });

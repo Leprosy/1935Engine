@@ -492,46 +492,6 @@ GAME.Components.bg = {
     }
 };
 
-GAME.Components.label = {
-    spriteObj: null,
-    x: 0,
-    y: 0,
-    text: "",
-    label: function(text, x, y) {
-        this.text = text;
-        this.x = x;
-        this.y = y;
-        return this;
-    },
-    setFrame: function(fr) {
-        var x = fr * this.width % this.texture.baseTexture.width;
-        var y = Math.floor(fr * this.width / this.texture.baseTexture.width) * this.height;
-        this.frame = fr;
-        this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
-    },
-    setupAnim: function(name, frames, fps) {
-        this.animations[name] = {
-            frames: frames,
-            fps: fps,
-            index: 0
-        };
-    },
-    startAnim: function(name) {
-        this.stopAnim();
-        var _this = this;
-        this.currentAnimation = GAME.Canvas.registerRefreshCall(function() {
-            var frames = _this.animations[name].frames;
-            if (_this.animations[name].index >= frames.length) {
-                _this.animations[name].index = 0;
-            }
-            _this.setFrame(frames[_this.animations[name].index++]);
-        }, this.animations[name].fps);
-    },
-    stopAnim: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentAnimation);
-    }
-};
-
 GAME.Components.pos = {
     x: 0,
     y: 0,
@@ -673,6 +633,7 @@ GAME.State.add("load", {
         });
     },
     destroy: function() {
+        GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
 });
