@@ -6,22 +6,19 @@ GAME.Key = (function() {
     var pre = null;
     var post = null;
     var listener = function(event) {
-        //console.log("GAME.Key: Event fired.", event);
-
         if (keys.hasOwnProperty(event.code)) {
             // Pre call
             if (typeof pre === "function") {
-                console.log("GAME.Key: Pre-call method.");
+                console.debug("GAME.Key: Pre-call method.");
                 var result = pre(event);
 
                 if (!result) {
-                    console.log("GAME.Key: Handler aborted by the pre-call method.");
+                    console.debug("GAME.Key: Handler aborted by the pre-call method.");
                     return; // If pre-call returns false, the rest of the handler is not executed.
                 }
             }
 
             // Run registered key handlers depending of the event generated(keyup, keydown)
-            //console.log("GAME.Key: Registered key pressed", event);
             if (event.type === "keyup") {
                 if (typeof keys[event.code][event.type] == "function") {
                     keys[event.code][event.type]();
@@ -38,7 +35,7 @@ GAME.Key = (function() {
 
             // Post call
             if (typeof post === "function") {
-                console.log("GAME.Key: Post-call method.");
+                console.debug("GAME.Key: Post-call method.");
                 post(event);
             }
         }
@@ -77,7 +74,7 @@ GAME.Key = (function() {
                 delete keys[code];
 
                 if (GAME.$.isEmptyObj(keys)) {
-                    console.log("GAME.Key: No more handlers, removing listener.");
+                    console.debug("GAME.Key: No more handlers, removing listener.");
                     document.removeEventListener("keydown", listener);
                     document.removeEventListener("keyup", listener);
                 }
@@ -100,9 +97,9 @@ GAME.Key = (function() {
 Example
 
 GAME.Key.add("KeyA", function handlerDown(ev) {
-    console.log("Key A pressed", ev);
+    console.debug("Key A pressed", ev);
 }, function handlerUp(ev) {
-    console.log("Key A released", ev);
+    console.debug("Key A released", ev);
 });
 
 */

@@ -1,6 +1,6 @@
 /**
  *  Base entity class
- *  
+ *
  *  @member id - unique id of the ent
  *  @member name - optional name for the ent
  */
@@ -20,8 +20,6 @@ GAME.Ent = class {
      * TODO: implement this!
      */
     attr(obj) {
-        console.log("adding attrs", obj)
-
         return this;
     }
 
@@ -154,7 +152,7 @@ GAME.Ent.prototype.hasAllCmp = function(cmpList) {
 
 /**
  *  Entity group class
- *  
+ *
  *  ents: list of entities that this group holds
  */
 GAME.EntGroup = function() {
@@ -167,11 +165,11 @@ GAME.EntGroup.prototype.add = function(ent) {
 };
 // Removes
 GAME.EntGroup.prototype.remove = function(ent) {
-    
+
 };
 // Queries
 GAME.EntGroup.prototype.queryTags = function(tagList, fn) {
-    
+
 };
 GAME.EntGroup.prototype.queryCmp = function(cmpList) {};
 

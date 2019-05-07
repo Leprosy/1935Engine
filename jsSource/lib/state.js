@@ -20,7 +20,7 @@ GAME.State = (function() {
         set: function(key, scope) {
             if (typeof states[key] !== "undefined") {
                 if (GAME.$.isObj(currentState) && typeof currentState.destroy === "function") {
-                    console.log("%cGAME.State." + currentState._id + " ended", "font-weight: bold");
+                    console.debug("%cGAME.State." + currentState._id + " ended", "font-weight: bold");
                     currentState.destroy();
                 }
 
@@ -28,7 +28,7 @@ GAME.State = (function() {
 
                 if (typeof currentState.init === "function") {
                     currentState.scope = scope; // allows to pass objects and varibles to the State
-                    console.log("%cGAME.State." + key + " started", "font-weight: bold");
+                    console.debug("%cGAME.State." + key + " started", "font-weight: bold");
                     currentState.init();
                 }
             } else {
