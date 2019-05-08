@@ -39,5 +39,5 @@ GAME.Components.update = {
     stopUpdate: function(name) {
         GAME.Canvas.cancelRefreshCall(this.currentUpdates[name]);
         delete this.currentUpdates[name];
-    },
+    }
 };

@@ -108,8 +108,8 @@ GAME.Ent = class {
         }
 
         return true;
-    };
-}
+    }
+};
 /*
 // Adds a tag to the entity
 GAME.Ent.prototype.addTag = function(tag) {
@@ -157,7 +157,7 @@ GAME.Ent.prototype.hasAllCmp = function(cmpList) {
  */
 GAME.EntGroup = function() {
     this.ents = [];
-}
+};
 
 // Adds an entity to the list
 GAME.EntGroup.prototype.add = function(ent) {

@@ -76,5 +76,5 @@ GAME.Components.actor = {
      */
     stopAnim: function() {
         GAME.Canvas.cancelRefreshCall(this.currentAnimationId);
-    },
+    }
 };

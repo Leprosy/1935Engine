@@ -557,6 +557,10 @@ GAME.State.add("demo1", {
             var speed = 10;
             obj.spriteObj.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
             obj.spriteObj.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
+            if (obj.spriteObj.y < 0) obj.spriteObj.y = 0;
+            if (obj.spriteObj.y > 550) obj.spriteObj.y = 550;
+            if (obj.spriteObj.x < 0) obj.spriteObj.x = 0;
+            if (obj.spriteObj.x > 750) obj.spriteObj.x = 750;
             if (GAME.Key.isPressed("ArrowLeft")) {
                 GAME.player.startAnim("left");
             } else if (GAME.Key.isPressed("ArrowRight")) {
@@ -574,6 +578,8 @@ GAME.State.add("demo1", {
         });
     },
     destroy: function() {
+        GAME.player.stopAnim();
+        GAME.player.stopUpdate("main");
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }

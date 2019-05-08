@@ -81,6 +81,9 @@ GAME.Canvas = (function() {
             return refreshCalls;
         },
 
+        /**
+         * Clear EVERYTHING
+         */
         clear: function() {
             pixiApp.stage.removeChildren();
         },
