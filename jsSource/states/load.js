@@ -10,15 +10,13 @@ GAME.State.add("load", {
         // A label
         var text = GAME.Canvas.addText("Loading...", 40, 40, {
             fontFamily: 'Arial',
-            fontSize: 36,
-            fontWeight: 'bold',
-            fill: ['#cccccc', '#000000'], // gradient
-            stroke: '#ffffff',
-            strokeThickness: 2});
+            fill: '#fff',
+            fontSize: 24,
+            fontWeight: 'bold'});
 
         // Loader for assets, go to main_menu
         GAME.Load.list({files: ["img/player.png", "img/demo-player.png", "img/demo-bg-back.png",
-                                "img/demo-bg-middle.png","img/demo-bg-front.png"],
+                                "img/demo-bg-middle.png","img/demo-bg-front.png", "img/logo.png"],
                         progress: function(ev, elem) {
                             text.text = `Loading...${ev.progress}%`;
                         },

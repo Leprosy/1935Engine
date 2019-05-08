@@ -5,18 +5,20 @@ GAME.State.add("main_menu", {
     init: function() {
         var style = {
             fontFamily: 'Arial',
-            fontSize: 36,
-            fontWeight: 'bold',
-            fill: ['#cccccc', '#000000'], // gradient
-            stroke: '#ffffff',
-            strokeThickness: 2
+            fill: '#fff',
+            fontSize: 24,
+            fontWeight: 'bold'
         };
 
-        GAME.Canvas.addText("1935Engine demo", 40, 40, style);
-        GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 80, style);
+        var logo = new GAME.Ent("logo", ["actor"]).actor(GAME.Canvas.getTxt("logo"), 282, 156);
+        logo.spriteObj.y = 40;
+        logo.spriteObj.x = 260;
+
+        GAME.Canvas.addText("1935engine demo", 40, 240, style);
+        GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 270, style);
         var selected = 1;
-        var text1 = GAME.Canvas.addText("Run Demo 1 *", 40, 150, style);
-        var text2 = GAME.Canvas.addText("Run Demo 2", 40, 190, style);
+        var text1 = GAME.Canvas.addText("Run Demo 1 *", 40, 350, style);
+        var text2 = GAME.Canvas.addText("Run Demo 2", 40, 380, style);
 
         GAME.Key.add("ArrowUp", function() {
             selected = 1;
