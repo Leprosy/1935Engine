@@ -42,6 +42,10 @@ GAME.State.add("demo2", {
     },
 
     destroy: function() {
+        GAME.player2.stopAnim();
+        GAME.bg1.stopUpdate("scroll");
+        GAME.bg2.stopUpdate("scroll");
+        GAME.bg3.stopUpdate("scroll");
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }

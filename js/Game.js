@@ -624,6 +624,10 @@ GAME.State.add("demo2", {
         });
     },
     destroy: function() {
+        GAME.player2.stopAnim();
+        GAME.bg1.stopUpdate("scroll");
+        GAME.bg2.stopUpdate("scroll");
+        GAME.bg3.stopUpdate("scroll");
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
@@ -674,7 +678,7 @@ GAME.State.add("main_menu", {
         var logo = new GAME.Ent("logo", [ "actor" ]).actor(GAME.Canvas.getTxt("logo"), 282, 156);
         logo.spriteObj.y = 40;
         logo.spriteObj.x = 260;
-        GAME.Canvas.addText("1935engine demo", 40, 240, style);
+        GAME.Canvas.addText("1935Engine demo", 40, 240, style);
         GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 270, style);
         var selected = 1;
         var text1 = GAME.Canvas.addText("Run Demo 1 *", 40, 350, style);
