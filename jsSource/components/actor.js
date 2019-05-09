@@ -75,6 +75,17 @@ GAME.Components.actor = {
      * Stop current animation
      */
     stopAnim: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentAnimationId);
-    }
+        if (this.currentAnimationId !== null) {
+            GAME.Canvas.cancelRefreshCall(this.currentAnimationId);
+            this.currentAnimation = null;
+            this.currentAnimationId = null;
+        }
+    },
+
+    /**
+     * Called when the entity is destroyed
+     */
+     destroy: function() {
+         this.stopAnim();
+     }
 };
