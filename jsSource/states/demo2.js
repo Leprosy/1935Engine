@@ -10,7 +10,7 @@ GAME.State.add("demo2", {
         this.bg2.bg.init(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
         this.bg3.bg.init(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
         this.bg1.bg.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];
-        this.bg2.bg.filters = [new PIXI.filters.BlurFilter(1)];
+        this.bg2.bg.spriteObj.filters = [new PIXI.filters.BlurFilter(1)];
         this.bg1.update.setupUpdate("scroll", function(obj) { obj.bg.scrollX(-1); }, 60);
         this.bg2.update.setupUpdate("scroll", function(obj) { obj.bg.scrollX(-5); }, 60);
         this.bg3.update.setupUpdate("scroll", function(obj) { obj.bg.scrollX(-10); }, 60);
