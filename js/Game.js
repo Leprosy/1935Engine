@@ -439,6 +439,7 @@ GAME.Components.actor = {
         this.width = width;
         this.setFrame(0);
         this.spriteObj = GAME.Canvas.addSprite(this.texture);
+        this.spriteObj.anchor.set(.5);
         this.__defineSetter__("x", function(x) {
             this.spriteObj.x = x;
         });
@@ -720,8 +721,8 @@ GAME.State.add("main_menu", {
         };
         var logo = new GAME.Ent("logo", [ "actor" ]);
         logo.actor.init(GAME.Canvas.getTxt("logo"), 282, 156);
-        logo.actor.y = 40;
-        logo.actor.x = 260;
+        logo.actor.x = GAME.Canvas.getApp().screen.width / 2;
+        logo.actor.y = 100;
         GAME.Canvas.addText("1935Engine demo", 40, 240, style);
         GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 270, style);
         var selected = 1;

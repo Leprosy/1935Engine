@@ -22,6 +22,7 @@ GAME.Components.actor = {
         this.width = width;
         this.setFrame(0);
         this.spriteObj = GAME.Canvas.addSprite(this.texture);
+        this.spriteObj.anchor.set(0.5);
 
         // Mapping the x,y values of the spriteObj
         this.__defineSetter__("x", function(x) {

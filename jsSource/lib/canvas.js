@@ -26,6 +26,8 @@ GAME.Canvas = (function() {
             pixiApp = new PIXI.Application();
             DOMelem.appendChild(pixiApp.view);
             requestAnimationFrame(refreshCycle);
+            this.width = pixiApp.screen.width;
+            this.height = pixiApp.screen.height;
         },
 
         addText: function(text, x, y, style) {
