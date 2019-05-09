@@ -472,6 +472,7 @@ GAME.Components.actor = {
         }
         this.stopAnim();
         this.currentAnimation = name;
+        this.animations[name].index = 0;
         var _this = this;
         this.currentAnimationId = GAME.Canvas.registerRefreshCall(function() {
             var frames = _this.animations[name].frames;
@@ -631,7 +632,7 @@ GAME.State.add("demo2", {
         this.bg2.bg.init(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
         this.bg3.bg.init(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
         this.bg1.bg.spriteObj.filters = [ new PIXI.filters.BlurFilter(2) ];
-        this.bg2.bg.filters = [ new PIXI.filters.BlurFilter(1) ];
+        this.bg2.bg.spriteObj.filters = [ new PIXI.filters.BlurFilter(1) ];
         this.bg1.update.setupUpdate("scroll", function(obj) {
             obj.bg.scrollX(-1);
         }, 60);
