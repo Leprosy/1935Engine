@@ -128,6 +128,7 @@ GAME.Ent = class {
         this.id = GAME.$.getUID();
         this.name = name;
         this.tags = [];
+        this.cmps = [];
         this.addCmps(cmpList);
         return this;
     }
@@ -139,9 +140,12 @@ GAME.Ent = class {
             keyList = [ keyList ];
         }
         for (var i = 0; i < keyList.length; ++i) {
-            if (GAME.Components.hasOwnProperty(keyList[i])) {
-                var component = GAME.$.clone(GAME.Components[keyList[i]]);
-                Object.assign(this, component);
+            var cmpName = keyList[i];
+            if (GAME.Components.hasOwnProperty(keyList[i]) && this.cmps.indexOf(cmpName) < 0) {
+                var component = GAME.$.clone(GAME.Components[cmpName]);
+                component.parent = this;
+                this[cmpName] = component;
+                this.cmps.push(cmpName);
             } else {
                 throw Error("GAME.Ent: Component '" + keyList[i] + "' not found");
             }
@@ -166,7 +170,9 @@ GAME.Ent = class {
             tagList = [ tagList ];
         }
         for (var i = 0; i < tagList.length; ++i) {
-            this.tags.push(tagList[i]);
+            if (this.tags.indexOf(tagList[i]) < 0) {
+                this.tags.push(tagList[i]);
+            }
         }
         return this;
     }
@@ -184,6 +190,13 @@ GAME.Ent = class {
             }
         }
         return true;
+    }
+    destroy() {
+        for (var i = 0; i < this.cmps.length; ++i) {
+            if (typeof this[this.cmps[i]].destroy === "function") {
+                this[this.cmps[i]].destroy();
+            }
+        }
     }
 };
 
@@ -420,12 +433,24 @@ GAME.Components.actor = {
     updated: {},
     currentAnimation: null,
     currentAnimationId: null,
-    actor: function(txt, width, height) {
+    init: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
         this.width = width;
         this.setFrame(0);
         this.spriteObj = GAME.Canvas.addSprite(this.texture);
+        this.__defineSetter__("x", function(x) {
+            this.spriteObj.x = x;
+        });
+        this.__defineSetter__("y", function(y) {
+            this.spriteObj.y = y;
+        });
+        this.__defineGetter__("x", function() {
+            return this.spriteObj.x;
+        });
+        this.__defineGetter__("y", function() {
+            return this.spriteObj.y;
+        });
         return this;
     },
     setFrame: function(fr) {
@@ -457,7 +482,14 @@ GAME.Components.actor = {
         }, this.animations[name].fps);
     },
     stopAnim: function() {
-        GAME.Canvas.cancelRefreshCall(this.currentAnimationId);
+        if (this.currentAnimationId !== null) {
+            GAME.Canvas.cancelRefreshCall(this.currentAnimationId);
+            this.currentAnimation = null;
+            this.currentAnimationId = null;
+        }
+    },
+    destroy: function() {
+        this.stopAnim();
     }
 };
 
@@ -536,50 +568,54 @@ GAME.Components.update = {
         }
         var _this = this;
         this.currentUpdates[name] = GAME.Canvas.registerRefreshCall(function() {
-            _this.updates[name].call(_this);
+            _this.updates[name].call(_this.parent);
         }, _this.updates[name].fps);
-        return this;
     },
     stopUpdate: function(name) {
         GAME.Canvas.cancelRefreshCall(this.currentUpdates[name]);
         delete this.currentUpdates[name];
+    },
+    destroy: function() {
+        for (var update in this.currentUpdates) {
+            this.stopUpdate(update);
+        }
     }
 };
 
 GAME.State.add("demo1", {
     name: "Demo 1",
     init: function() {
-        GAME.player = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("player"), 50, 40);
-        GAME.player.setupAnim("idle", [ 0, 1 ], 10);
-        GAME.player.setupAnim("left", [ 2, 3 ], 10);
-        GAME.player.setupAnim("right", [ 4, 5 ], 10);
-        GAME.player.setupUpdate("main", function(obj) {
+        GAME.player = new GAME.Ent("player", [ "actor", "update" ]);
+        GAME.player.actor.init(GAME.Canvas.getTxt("player"), 50, 40);
+        GAME.player.actor.setupAnim("idle", [ 0, 1 ], 10);
+        GAME.player.actor.setupAnim("left", [ 2, 3 ], 10);
+        GAME.player.actor.setupAnim("right", [ 4, 5 ], 10);
+        GAME.player.update.setupUpdate("main", function(obj) {
             var speed = 10;
-            obj.spriteObj.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
-            obj.spriteObj.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
-            if (obj.spriteObj.y < 0) obj.spriteObj.y = 0;
-            if (obj.spriteObj.y > 550) obj.spriteObj.y = 550;
-            if (obj.spriteObj.x < 0) obj.spriteObj.x = 0;
-            if (obj.spriteObj.x > 750) obj.spriteObj.x = 750;
+            obj.actor.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
+            obj.actor.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
+            if (obj.actor.y < 0) obj.actor.y = 0;
+            if (obj.actor.y > 550) obj.actor.y = 550;
+            if (obj.actor.x < 0) obj.actor.x = 0;
+            if (obj.actor.x > 750) obj.actor.x = 750;
             if (GAME.Key.isPressed("ArrowLeft")) {
-                GAME.player.startAnim("left");
+                GAME.player.actor.startAnim("left");
             } else if (GAME.Key.isPressed("ArrowRight")) {
-                GAME.player.startAnim("right");
+                GAME.player.actor.startAnim("right");
             } else {
-                GAME.player.startAnim("idle");
+                GAME.player.actor.startAnim("idle");
             }
         }, 60);
-        GAME.player.spriteObj.y = 450;
-        GAME.player.spriteObj.x = 300;
-        GAME.player.startAnim("idle");
-        GAME.player.startUpdate("main");
+        GAME.player.actor.y = 450;
+        GAME.player.actor.x = 300;
+        GAME.player.actor.startAnim("idle");
+        GAME.player.update.startUpdate("main");
         GAME.Key.add("Space", function(ev) {
             GAME.State.set("main_menu");
         });
     },
     destroy: function() {
-        GAME.player.stopAnim();
-        GAME.player.stopUpdate("main");
+        GAME.player.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
@@ -676,9 +712,10 @@ GAME.State.add("main_menu", {
             fontSize: 24,
             fontWeight: "bold"
         };
-        var logo = new GAME.Ent("logo", [ "actor" ]).actor(GAME.Canvas.getTxt("logo"), 282, 156);
-        logo.spriteObj.y = 40;
-        logo.spriteObj.x = 260;
+        var logo = new GAME.Ent("logo", [ "actor" ]);
+        logo.actor.init(GAME.Canvas.getTxt("logo"), 282, 156);
+        logo.actor.y = 40;
+        logo.actor.x = 260;
         GAME.Canvas.addText("1935Engine demo", 40, 240, style);
         GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 270, style);
         var selected = 1;

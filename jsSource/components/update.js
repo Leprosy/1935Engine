@@ -27,10 +27,8 @@ GAME.Components.update = {
         var _this = this;
 
         this.currentUpdates[name] = GAME.Canvas.registerRefreshCall(function() {
-            _this.updates[name].call(_this);
+            _this.updates[name].call(_this.parent);
         }, _this.updates[name].fps);
-
-        return this;
     },
 
     /**
@@ -39,5 +37,11 @@ GAME.Components.update = {
     stopUpdate: function(name) {
         GAME.Canvas.cancelRefreshCall(this.currentUpdates[name]);
         delete this.currentUpdates[name];
+    },
+
+    destroy: function() {
+        for (var update in this.currentUpdates) {
+            this.stopUpdate(update);
+        }
     }
 };

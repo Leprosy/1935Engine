@@ -10,6 +10,7 @@ GAME.Ent = class {
         this.id = GAME.$.getUID();
         this.name = name;
         this.tags = [];
+        this.cmps = [];
         this.addCmps(cmpList);
 
         return this;
@@ -32,9 +33,13 @@ GAME.Ent = class {
         }
 
         for (var i = 0; i < keyList.length; ++i) {
-            if (GAME.Components.hasOwnProperty(keyList[i])) {
-                var component = GAME.$.clone(GAME.Components[keyList[i]]);
-                Object.assign(this, component);
+            var cmpName = keyList[i];
+
+            if (GAME.Components.hasOwnProperty(keyList[i]) && this.cmps.indexOf(cmpName) < 0) {
+                var component = GAME.$.clone(GAME.Components[cmpName]);
+                component.parent = this;
+                this[cmpName] = component;
+                this.cmps.push(cmpName);
             } else {
                 throw Error("GAME.Ent: Component '" + keyList[i] + "' not found");
             }
@@ -77,7 +82,9 @@ GAME.Ent = class {
         }
 
         for (var i = 0; i < tagList.length; ++i) {
-            this.tags.push(tagList[i]);
+            if (this.tags.indexOf(tagList[i]) < 0) {
+                this.tags.push(tagList[i]);
+            }
         }
 
         return this;
@@ -108,6 +115,17 @@ GAME.Ent = class {
         }
 
         return true;
+    }
+
+    /**
+     * Destroys the entity and calls the destroy mehtod of all cpms
+     */
+    destroy() {
+        for (var i = 0; i < this.cmps.length; ++i) {
+            if (typeof this[this.cmps[i]].destroy === "function") {
+                this[this.cmps[i]].destroy();
+            }
+        }
     }
 };
 /*

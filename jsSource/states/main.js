@@ -10,9 +10,10 @@ GAME.State.add("main_menu", {
             fontWeight: 'bold'
         };
 
-        var logo = new GAME.Ent("logo", ["actor"]).actor(GAME.Canvas.getTxt("logo"), 282, 156);
-        logo.spriteObj.y = 40;
-        logo.spriteObj.x = 260;
+        var logo = new GAME.Ent("logo", ["actor"]);
+        logo.actor.init(GAME.Canvas.getTxt("logo"), 282, 156);
+        logo.actor.y = 40;
+        logo.actor.x = 260;
 
         GAME.Canvas.addText("1935Engine demo", 40, 240, style);
         GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 270, style);

@@ -14,14 +14,28 @@ GAME.Components.actor = {
     currentAnimationId: null,
 
     /**
-     * Setup actor data
+     * Setup the basic actor dimension and texture data
      */
-    actor: function(txt, width, height) {
+    init: function(txt, width, height) {
         this.texture = txt;
         this.height = height;
         this.width = width;
         this.setFrame(0);
         this.spriteObj = GAME.Canvas.addSprite(this.texture);
+
+        // Mapping the x,y values of the spriteObj
+        this.__defineSetter__("x", function(x) {
+            this.spriteObj.x = x;
+        });
+        this.__defineSetter__("y", function(y) {
+            this.spriteObj.y = y;
+        });
+        this.__defineGetter__("x", function() {
+            return this.spriteObj.x;
+        });
+        this.__defineGetter__("y", function() {
+            return this.spriteObj.y;
+        });
 
         return this;
     },
