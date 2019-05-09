@@ -426,7 +426,7 @@ GAME.$ = {
         $("#console").prepend("> " + str + "\n");
     },
     getUID: function() {
-        return new Date().getTime().toString(16);
+        return new Date().getTime().toString(32) + "_" + Math.random().toString(36).substr(2, 9);
     }
 };
 
@@ -624,6 +624,12 @@ GAME.State.add("demo1", {
     },
     init: function() {
         var _this = this;
+        this.bg = new GAME.Ent("bg", [ "bg", "update" ]);
+        this.bg.bg.init(GAME.Canvas.getTxt("ocean"), 800, 600);
+        this.bg.update.setupUpdate("scroll", function(obj) {
+            obj.bg.scrollY(+5);
+        }, 60);
+        this.bg.update.startUpdate("scroll");
         this.enemies = [];
         this.player = new GAME.Ent("player", [ "actor", "update" ]);
         window.player = this.player;
@@ -668,6 +674,7 @@ GAME.State.add("demo1", {
         for (var i = 0; i < this.enemies.length; ++i) {
             this.enemies[i].destroy();
         }
+        this.bg.destroy();
         this.player.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
@@ -739,7 +746,7 @@ GAME.State.add("load", {
             fontWeight: "bold"
         });
         GAME.Load.list({
-            files: [ "img/player.png", "img/demo-player.png", "img/demo-bg-back.png", "img/demo-bg-middle.png", "img/demo-bg-front.png", "img/logo.png" ],
+            files: [ "img/player.png", "img/demo-player.png", "img/demo-bg-back.png", "img/demo-bg-middle.png", "img/demo-bg-front.png", "img/logo.png", "img/ocean.jpg" ],
             progress: function(ev, elem) {
                 var prog = Math.round(ev.progress);
                 text.text = `Loading...${prog}%`;

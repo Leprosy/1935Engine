@@ -13,7 +13,7 @@ GAME.$ = {
         return this.isObj(thing) && Object.keys(thing).length === 0;
     },
     isArray: function(thing) {
-        return (Object.prototype.toString.call(thing) === '[object Array]')
+        return (Object.prototype.toString.call(thing) === '[object Array]');
     },
     inArray: function(obj, list) {
         for (var i = 0; i < list.length; ++i) {
@@ -95,6 +95,6 @@ GAME.$ = {
     },
 
     getUID: function() {
-        return new Date().getTime().toString(16);
+        return new Date().getTime().toString(32) + '_' + Math.random().toString(36).substr(2, 9);
     }
 };
