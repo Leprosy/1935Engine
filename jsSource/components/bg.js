@@ -8,7 +8,7 @@ GAME.Components.bg = {
     /**
      * "constructor" should return this
      */
-    bg: function(txt, width, height) {
+    init: function(txt, width, height) {
         this.texture = txt;
         this.spriteObj = GAME.Canvas.addTilingSprite(this.texture, width, height);
 

@@ -3,49 +3,50 @@ GAME.State.add("demo2", {
     name: "Demo 2",
 
     init: function() {
-        GAME.bg1 = new GAME.Ent("bg1", ["bg", "update"])
-                          .bg(GAME.Canvas.getTxt("demo-bg-back"), 800, 600);
-        GAME.bg2 = new GAME.Ent("bg2", ["bg", "update"])
-                          .bg(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
-        GAME.bg3 = new GAME.Ent("bg3", ["bg", "update"])
-                          .bg(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
-        GAME.player2 = new GAME.Ent("player", ["actor", "update"])
-                              .actor(GAME.Canvas.getTxt("demo-player"), 100, 100); // TODO: pass only the name of the txt resource?
+        this.bg1 = new GAME.Ent("bg1", ["bg", "update"]);
+        this.bg2 = new GAME.Ent("bg2", ["bg", "update"]);
+        this.bg3 = new GAME.Ent("bg3", ["bg", "update"]);
+        this.bg1.bg.init(GAME.Canvas.getTxt("demo-bg-back"), 800, 600);
+        this.bg2.bg.init(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
+        this.bg3.bg.init(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
+        this.bg1.bg.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];
+        this.bg2.bg.filters = [new PIXI.filters.BlurFilter(1)];
+        this.bg1.update.setupUpdate("scroll", function(obj) { obj.bg.scrollX(-1); }, 60);
+        this.bg2.update.setupUpdate("scroll", function(obj) { obj.bg.scrollX(-5); }, 60);
+        this.bg3.update.setupUpdate("scroll", function(obj) { obj.bg.scrollX(-10); }, 60);
 
-        GAME.player2.setupAnim("idle", [10], 60);
-        GAME.player2.setupAnim("walk", [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], 60);
-        GAME.bg1.setupUpdate("scroll", function(bg) { bg.scrollX(-1); }, 60);
-        GAME.bg2.setupUpdate("scroll", function(bg) { bg.scrollX(-5); }, 60);
-        GAME.bg3.setupUpdate("scroll", function(bg) { bg.scrollX(-10); }, 60);
+        this.player2 = new GAME.Ent("player", ["actor", "update"]);
+        this.player2.actor.init(GAME.Canvas.getTxt("demo-player"), 100, 100);
+        this.player2.actor.setupAnim("idle", [10], 60);
+        this.player2.actor.setupAnim("walk", [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], 60);
+        this.player2.actor.y = 450;
+        this.player2.actor.x = 300;
+        this.player2.actor.startAnim("idle");
 
-        GAME.player2.spriteObj.y = 450;
-        GAME.player2.spriteObj.x = 300;
-        GAME.player2.startAnim("idle");
-        GAME.bg1.spriteObj.filters = [new PIXI.filters.BlurFilter(2)];
-        GAME.bg2.spriteObj.filters = [new PIXI.filters.BlurFilter(1)];
+        var _this = this;
 
         GAME.Key.add("ArrowRight", function(ev) {
-            GAME.bg1.startUpdate("scroll");
-            GAME.bg2.startUpdate("scroll");
-            GAME.bg3.startUpdate("scroll");
-            GAME.player2.startAnim("walk");
+            _this.bg1.update.startUpdate("scroll");
+            _this.bg2.update.startUpdate("scroll");
+            _this.bg3.update.startUpdate("scroll");
+            _this.player2.actor.startAnim("walk");
         }, function(ev) {
-            GAME.bg1.stopUpdate("scroll");
-            GAME.bg2.stopUpdate("scroll");
-            GAME.bg3.stopUpdate("scroll");
-            GAME.player2.startAnim("idle");
+            _this.bg1.update.stopUpdate("scroll");
+            _this.bg2.update.stopUpdate("scroll");
+            _this.bg3.update.stopUpdate("scroll");
+            _this.player2.actor.startAnim("idle");
         });
 
-        GAME.Key.add("Space", function(ev) {
+        GAME.Key.add("Escape", function(ev) {
             GAME.State.set("main_menu");
         });
     },
 
     destroy: function() {
-        GAME.player2.stopAnim();
-        GAME.bg1.stopUpdate("scroll");
-        GAME.bg2.stopUpdate("scroll");
-        GAME.bg3.stopUpdate("scroll");
+        this.player2.destroy();
+        this.bg1.destroy();
+        this.bg2.destroy();
+        this.bg3.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }

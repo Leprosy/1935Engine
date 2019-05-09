@@ -496,7 +496,7 @@ GAME.Components.actor = {
 GAME.Components.bg = {
     spriteObj: null,
     texture: null,
-    bg: function(txt, width, height) {
+    init: function(txt, width, height) {
         this.texture = txt;
         this.spriteObj = GAME.Canvas.addTilingSprite(this.texture, width, height);
         return this;
@@ -585,12 +585,12 @@ GAME.Components.update = {
 GAME.State.add("demo1", {
     name: "Demo 1",
     init: function() {
-        GAME.player = new GAME.Ent("player", [ "actor", "update" ]);
-        GAME.player.actor.init(GAME.Canvas.getTxt("player"), 50, 40);
-        GAME.player.actor.setupAnim("idle", [ 0, 1 ], 10);
-        GAME.player.actor.setupAnim("left", [ 2, 3 ], 10);
-        GAME.player.actor.setupAnim("right", [ 4, 5 ], 10);
-        GAME.player.update.setupUpdate("main", function(obj) {
+        this.player = new GAME.Ent("player", [ "actor", "update" ]);
+        this.player.actor.init(GAME.Canvas.getTxt("player"), 50, 40);
+        this.player.actor.setupAnim("idle", [ 0, 1 ], 10);
+        this.player.actor.setupAnim("left", [ 2, 3 ], 10);
+        this.player.actor.setupAnim("right", [ 4, 5 ], 10);
+        this.player.update.setupUpdate("main", function(obj) {
             var speed = 10;
             obj.actor.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
             obj.actor.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
@@ -599,23 +599,23 @@ GAME.State.add("demo1", {
             if (obj.actor.x < 0) obj.actor.x = 0;
             if (obj.actor.x > 750) obj.actor.x = 750;
             if (GAME.Key.isPressed("ArrowLeft")) {
-                GAME.player.actor.startAnim("left");
+                obj.actor.startAnim("left");
             } else if (GAME.Key.isPressed("ArrowRight")) {
-                GAME.player.actor.startAnim("right");
+                obj.actor.startAnim("right");
             } else {
-                GAME.player.actor.startAnim("idle");
+                obj.actor.startAnim("idle");
             }
         }, 60);
-        GAME.player.actor.y = 450;
-        GAME.player.actor.x = 300;
-        GAME.player.actor.startAnim("idle");
-        GAME.player.update.startUpdate("main");
-        GAME.Key.add("Space", function(ev) {
+        this.player.actor.y = 450;
+        this.player.actor.x = 300;
+        this.player.actor.startAnim("idle");
+        this.player.update.startUpdate("main");
+        GAME.Key.add("Escape", function(ev) {
             GAME.State.set("main_menu");
         });
     },
     destroy: function() {
-        GAME.player.destroy();
+        this.player.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
@@ -624,46 +624,51 @@ GAME.State.add("demo1", {
 GAME.State.add("demo2", {
     name: "Demo 2",
     init: function() {
-        GAME.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-back"), 800, 600);
-        GAME.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
-        GAME.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]).bg(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
-        GAME.player2 = new GAME.Ent("player", [ "actor", "update" ]).actor(GAME.Canvas.getTxt("demo-player"), 100, 100);
-        GAME.player2.setupAnim("idle", [ 10 ], 60);
-        GAME.player2.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
-        GAME.bg1.setupUpdate("scroll", function(bg) {
-            bg.scrollX(-1);
+        this.bg1 = new GAME.Ent("bg1", [ "bg", "update" ]);
+        this.bg2 = new GAME.Ent("bg2", [ "bg", "update" ]);
+        this.bg3 = new GAME.Ent("bg3", [ "bg", "update" ]);
+        this.bg1.bg.init(GAME.Canvas.getTxt("demo-bg-back"), 800, 600);
+        this.bg2.bg.init(GAME.Canvas.getTxt("demo-bg-middle"), 800, 600);
+        this.bg3.bg.init(GAME.Canvas.getTxt("demo-bg-front"), 800, 600);
+        this.bg1.bg.spriteObj.filters = [ new PIXI.filters.BlurFilter(2) ];
+        this.bg2.bg.filters = [ new PIXI.filters.BlurFilter(1) ];
+        this.bg1.update.setupUpdate("scroll", function(obj) {
+            obj.bg.scrollX(-1);
         }, 60);
-        GAME.bg2.setupUpdate("scroll", function(bg) {
-            bg.scrollX(-5);
+        this.bg2.update.setupUpdate("scroll", function(obj) {
+            obj.bg.scrollX(-5);
         }, 60);
-        GAME.bg3.setupUpdate("scroll", function(bg) {
-            bg.scrollX(-10);
+        this.bg3.update.setupUpdate("scroll", function(obj) {
+            obj.bg.scrollX(-10);
         }, 60);
-        GAME.player2.spriteObj.y = 450;
-        GAME.player2.spriteObj.x = 300;
-        GAME.player2.startAnim("idle");
-        GAME.bg1.spriteObj.filters = [ new PIXI.filters.BlurFilter(2) ];
-        GAME.bg2.spriteObj.filters = [ new PIXI.filters.BlurFilter(1) ];
+        this.player2 = new GAME.Ent("player", [ "actor", "update" ]);
+        this.player2.actor.init(GAME.Canvas.getTxt("demo-player"), 100, 100);
+        this.player2.actor.setupAnim("idle", [ 10 ], 60);
+        this.player2.actor.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
+        this.player2.actor.y = 450;
+        this.player2.actor.x = 300;
+        this.player2.actor.startAnim("idle");
+        var _this = this;
         GAME.Key.add("ArrowRight", function(ev) {
-            GAME.bg1.startUpdate("scroll");
-            GAME.bg2.startUpdate("scroll");
-            GAME.bg3.startUpdate("scroll");
-            GAME.player2.startAnim("walk");
+            _this.bg1.update.startUpdate("scroll");
+            _this.bg2.update.startUpdate("scroll");
+            _this.bg3.update.startUpdate("scroll");
+            _this.player2.actor.startAnim("walk");
         }, function(ev) {
-            GAME.bg1.stopUpdate("scroll");
-            GAME.bg2.stopUpdate("scroll");
-            GAME.bg3.stopUpdate("scroll");
-            GAME.player2.startAnim("idle");
+            _this.bg1.update.stopUpdate("scroll");
+            _this.bg2.update.stopUpdate("scroll");
+            _this.bg3.update.stopUpdate("scroll");
+            _this.player2.actor.startAnim("idle");
         });
-        GAME.Key.add("Space", function(ev) {
+        GAME.Key.add("Escape", function(ev) {
             GAME.State.set("main_menu");
         });
     },
     destroy: function() {
-        GAME.player2.stopAnim();
-        GAME.bg1.stopUpdate("scroll");
-        GAME.bg2.stopUpdate("scroll");
-        GAME.bg3.stopUpdate("scroll");
+        this.player2.destroy();
+        this.bg1.destroy();
+        this.bg2.destroy();
+        this.bg3.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
     }
