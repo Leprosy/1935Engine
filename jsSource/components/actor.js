@@ -72,6 +72,7 @@ GAME.Components.actor = {
 
         this.stopAnim();
         this.currentAnimation = name;
+        this.animations[name].index = 0;
         var _this = this;
 
         this.currentAnimationId = GAME.Canvas.registerRefreshCall(function() {
