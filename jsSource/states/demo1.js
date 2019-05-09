@@ -33,6 +33,12 @@ GAME.State.add("demo1", {
     init: function() {
         var _this = this;
 
+        // Bg
+        this.bg = new GAME.Ent("bg", ["bg", "update"]);
+        this.bg.bg.init(GAME.Canvas.getTxt("ocean"), 800, 600);
+        this.bg.update.setupUpdate("scroll", function(obj) { obj.bg.scrollY(+5); }, 60);
+        this.bg.update.startUpdate("scroll");
+
         // Enemies
         this.enemies = [];
 
@@ -97,6 +103,7 @@ GAME.State.add("demo1", {
             this.enemies[i].destroy();
         }
 
+        this.bg.destroy();
         this.player.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
