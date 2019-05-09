@@ -1,23 +1,59 @@
 // Main menu state.
 GAME.State.add("demo1", {
     name: "Demo 1",
+    speed: 10,
+    width: 50,
+    height: 40,
+    maxEnemies: 10,
+
+    generateEnemy: function() {
+        var name = "enemy" + this.enemies.length;
+        var enemy = new GAME.Ent(name, ["actor", "update"]);
+        enemy.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height);
+        enemy.actor.spriteObj.rotation = Math.PI;
+        enemy.actor.spriteObj.tint = 0xFF0000;
+        enemy.actor.x = Math.random() * GAME.Canvas.width;
+        enemy.actor.y = 0;
+
+        var _this = this;
+
+        enemy.update.setupUpdate("move", function(obj) {
+            obj.actor.y += _this.speed / 4;
+
+            if (obj.actor.y > GAME.Canvas.height) {
+                obj.destroy();
+                _this.enemies.splice(_this.enemies.indexOf(obj), 1);
+            }
+        }, 60);
+        enemy.update.startUpdate("move");
+
+        return enemy;
+    },
 
     init: function() {
-        this.player = new GAME.Ent("player", ["actor", "update"]);
-        this.player.actor.init(GAME.Canvas.getTxt("player"), 50, 40); // TODO: pass only the name of the txt resource?
+        var _this = this;
 
-        // Animations and updates
+        // Enemies
+        this.enemies = [];
+
+        // Player
+        this.player = new GAME.Ent("player", ["actor", "update"]); window.player = this.player;
+        this.player.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height); // TODO: pass only the name of the txt resource?
+
+        // Animations
         this.player.actor.setupAnim("idle", [0, 1], 10);
         this.player.actor.setupAnim("left", [2, 3], 10);
         this.player.actor.setupAnim("right", [4, 5], 10);
-        this.player.update.setupUpdate("main", function(obj) {
-            var speed = 10;
-            obj.actor.y += (-speed * GAME.Key.isPressed("ArrowUp") +
-                                speed * GAME.Key.isPressed("ArrowDown"));
-            obj.actor.x += (-speed * GAME.Key.isPressed("ArrowLeft") +
-                                speed * GAME.Key.isPressed("ArrowRight"));
 
-            if (obj.actor.y < 0) obj.actor.y = 0;
+        // Player update
+        this.player.update.setupUpdate("main", function(obj) {
+            // Check movement
+            obj.actor.y += (-_this.speed * GAME.Key.isPressed("ArrowUp") +
+                            _this.speed * GAME.Key.isPressed("ArrowDown"));
+            obj.actor.x += (-_this.speed * GAME.Key.isPressed("ArrowLeft") +
+                            _this.speed * GAME.Key.isPressed("ArrowRight"));
+
+            if (obj.actor.y < 0) obj.actor.y = 0; // TODO: use height/widht and screen dims to do this
             if (obj.actor.y > 550) obj.actor.y = 550;
             if (obj.actor.x < 0) obj.actor.x = 0;
             if (obj.actor.x > 750) obj.actor.x = 750;
@@ -28,6 +64,20 @@ GAME.State.add("demo1", {
                 obj.actor.startAnim("right");
             } else {
                 obj.actor.startAnim("idle");
+            }
+
+            // Collisions
+            for (var i = 0; i < _this.enemies.length; ++i) {
+                if (_this.player.actor.intersects(_this.enemies[i].actor)) {
+                    GAME.State.set("main_menu");
+                    return;
+                }
+            }
+
+            // Spawn enemies
+            if (Math.random() * 100 < 2 && _this.enemies.length < _this.maxEnemies) {
+                var enemy = _this.generateEnemy();
+                _this.enemies.push(enemy);
             }
         }, 60);
 
@@ -43,6 +93,10 @@ GAME.State.add("demo1", {
     },
 
     destroy: function() {
+        for (var i = 0; i < this.enemies.length; ++i) {
+            this.enemies[i].destroy();
+        }
+
         this.player.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();

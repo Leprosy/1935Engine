@@ -98,10 +98,22 @@ GAME.Components.actor = {
         }
     },
 
+    /** Intersection
+     *
+     */
+     intersects: function(actor) {
+         var me = this.spriteObj.getBounds();
+         var it = actor.spriteObj.getBounds();
+
+         return me.x + me.width > it.x && me.x < it.x + it.width &&
+                me.y + me.height > it.y && me.y < it.y + it.height;
+     },
+
     /**
      * Called when the entity is destroyed
      */
      destroy: function() {
          this.stopAnim();
+         this.spriteObj.destroy();
      }
 };

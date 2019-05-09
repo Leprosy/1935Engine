@@ -13,7 +13,10 @@ GAME.Canvas = (function() {
 
             if ((callTime - lastRefresh) / 1000 > (1 / fps)) {
                 call(lastRefresh, callTime);
-                refreshCalls[i].lastRefresh = callTime;
+
+                if (refreshCalls[i]) {
+                    refreshCalls[i].lastRefresh = callTime;
+                }
             }
         }
 
@@ -53,6 +56,10 @@ GAME.Canvas = (function() {
 
         getTxt: function(textureName) {
             return PIXI.loader.resources[textureName].texture;
+        },
+
+        createTxt: function(textureName) {
+            return new PIXI.Texture(PIXI.loader.resources[textureName].texture);
         },
 
         registerRefreshCall: function(call, fps) {

@@ -59,7 +59,9 @@ GAME.Canvas = function() {
             var lastRefresh = refreshCalls[i].lastRefresh;
             if ((callTime - lastRefresh) / 1e3 > 1 / fps) {
                 call(lastRefresh, callTime);
-                refreshCalls[i].lastRefresh = callTime;
+                if (refreshCalls[i]) {
+                    refreshCalls[i].lastRefresh = callTime;
+                }
             }
         }
         requestAnimationFrame(refreshCycle);
@@ -70,6 +72,8 @@ GAME.Canvas = function() {
             pixiApp = new PIXI.Application();
             DOMelem.appendChild(pixiApp.view);
             requestAnimationFrame(refreshCycle);
+            this.width = pixiApp.screen.width;
+            this.height = pixiApp.screen.height;
         },
         addText: function(text, x, y, style) {
             style = new PIXI.TextStyle(style);
@@ -91,6 +95,9 @@ GAME.Canvas = function() {
         },
         getTxt: function(textureName) {
             return PIXI.loader.resources[textureName].texture;
+        },
+        createTxt: function(textureName) {
+            return new PIXI.Texture(PIXI.loader.resources[textureName].texture);
         },
         registerRefreshCall: function(call, fps) {
             var id = GAME.$.getUID();
@@ -490,8 +497,14 @@ GAME.Components.actor = {
             this.currentAnimationId = null;
         }
     },
+    intersects: function(actor) {
+        var me = this.spriteObj.getBounds();
+        var it = actor.spriteObj.getBounds();
+        return me.x + me.width > it.x && me.x < it.x + it.width && me.y + me.height > it.y && me.y < it.y + it.height;
+    },
     destroy: function() {
         this.stopAnim();
+        this.spriteObj.destroy();
     }
 };
 
@@ -586,16 +599,41 @@ GAME.Components.update = {
 
 GAME.State.add("demo1", {
     name: "Demo 1",
+    speed: 10,
+    width: 50,
+    height: 40,
+    maxEnemies: 10,
+    generateEnemy: function() {
+        var name = "enemy" + this.enemies.length;
+        var enemy = new GAME.Ent(name, [ "actor", "update" ]);
+        enemy.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height);
+        enemy.actor.spriteObj.rotation = Math.PI;
+        enemy.actor.spriteObj.tint = 16711680;
+        enemy.actor.x = Math.random() * GAME.Canvas.width;
+        enemy.actor.y = 0;
+        var _this = this;
+        enemy.update.setupUpdate("move", function(obj) {
+            obj.actor.y += _this.speed / 4;
+            if (obj.actor.y > GAME.Canvas.height) {
+                obj.destroy();
+                _this.enemies.splice(_this.enemies.indexOf(obj), 1);
+            }
+        }, 60);
+        enemy.update.startUpdate("move");
+        return enemy;
+    },
     init: function() {
+        var _this = this;
+        this.enemies = [];
         this.player = new GAME.Ent("player", [ "actor", "update" ]);
-        this.player.actor.init(GAME.Canvas.getTxt("player"), 50, 40);
+        window.player = this.player;
+        this.player.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height);
         this.player.actor.setupAnim("idle", [ 0, 1 ], 10);
         this.player.actor.setupAnim("left", [ 2, 3 ], 10);
         this.player.actor.setupAnim("right", [ 4, 5 ], 10);
         this.player.update.setupUpdate("main", function(obj) {
-            var speed = 10;
-            obj.actor.y += -speed * GAME.Key.isPressed("ArrowUp") + speed * GAME.Key.isPressed("ArrowDown");
-            obj.actor.x += -speed * GAME.Key.isPressed("ArrowLeft") + speed * GAME.Key.isPressed("ArrowRight");
+            obj.actor.y += -_this.speed * GAME.Key.isPressed("ArrowUp") + _this.speed * GAME.Key.isPressed("ArrowDown");
+            obj.actor.x += -_this.speed * GAME.Key.isPressed("ArrowLeft") + _this.speed * GAME.Key.isPressed("ArrowRight");
             if (obj.actor.y < 0) obj.actor.y = 0;
             if (obj.actor.y > 550) obj.actor.y = 550;
             if (obj.actor.x < 0) obj.actor.x = 0;
@@ -607,6 +645,16 @@ GAME.State.add("demo1", {
             } else {
                 obj.actor.startAnim("idle");
             }
+            for (var i = 0; i < _this.enemies.length; ++i) {
+                if (_this.player.actor.intersects(_this.enemies[i].actor)) {
+                    GAME.State.set("main_menu");
+                    return;
+                }
+            }
+            if (Math.random() * 100 < 2 && _this.enemies.length < _this.maxEnemies) {
+                var enemy = _this.generateEnemy();
+                _this.enemies.push(enemy);
+            }
         }, 60);
         this.player.actor.y = 450;
         this.player.actor.x = 300;
@@ -617,6 +665,9 @@ GAME.State.add("demo1", {
         });
     },
     destroy: function() {
+        for (var i = 0; i < this.enemies.length; ++i) {
+            this.enemies[i].destroy();
+        }
         this.player.destroy();
         GAME.Canvas.clear();
         GAME.Key.removeAll();
@@ -721,7 +772,7 @@ GAME.State.add("main_menu", {
         };
         var logo = new GAME.Ent("logo", [ "actor" ]);
         logo.actor.init(GAME.Canvas.getTxt("logo"), 282, 156);
-        logo.actor.x = GAME.Canvas.getApp().screen.width / 2;
+        logo.actor.x = GAME.Canvas.width / 2;
         logo.actor.y = 100;
         GAME.Canvas.addText("1935Engine demo", 40, 240, style);
         GAME.Canvas.addText("(Arrows to select, Space to start)", 40, 270, style);
