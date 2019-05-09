@@ -16,7 +16,8 @@ GAME.State.add("load", {
 
         // Loader for assets, go to main_menu
         GAME.Load.list({files: ["img/player.png", "img/demo-player.png", "img/demo-bg-back.png",
-                                "img/demo-bg-middle.png","img/demo-bg-front.png", "img/logo.png"],
+                                "img/demo-bg-middle.png","img/demo-bg-front.png", "img/logo.png",
+                                "img/ocean.jpg"],
                         progress: function(ev, elem) {
                             var prog = Math.round(ev.progress);
                             text.text = `Loading...${prog}%`;
