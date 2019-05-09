@@ -12,7 +12,7 @@ GAME.Components.bg = {
         this.texture = txt;
         this.spriteObj = GAME.Canvas.addTilingSprite(this.texture, width, height);
 
-        return this
+        return this;
     },
 
     scrollX: function(dx) {
@@ -21,4 +21,4 @@ GAME.Components.bg = {
     scrollY: function(dy) {
         this.spriteObj.tilePosition.y += dy;
     }
-}
+};
