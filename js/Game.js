@@ -467,11 +467,12 @@ GAME.Components.actor = {
         this.frame = fr;
         this.texture.frame = new PIXI.Rectangle(x, y, this.width, this.height);
     },
-    setupAnim: function(name, frames, fps) {
+    setupAnim: function(name, frames, fps, callback) {
         this.animations[name] = {
             frames: frames,
             fps: fps,
-            index: 0
+            index: 0,
+            callback: callback
         };
     },
     startAnim: function(name) {
@@ -486,6 +487,9 @@ GAME.Components.actor = {
             var frames = _this.animations[name].frames;
             if (_this.animations[name].index >= frames.length) {
                 _this.animations[name].index = 0;
+                if (typeof _this.animations[name].callback === "function") {
+                    _this.animations[name].callback();
+                }
             }
             _this.setFrame(frames[_this.animations[name].index++]);
         }, this.animations[name].fps);
@@ -637,7 +641,11 @@ GAME.State.add("demo1", {
         this.player.actor.setupAnim("idle", [ 0, 1 ], 10);
         this.player.actor.setupAnim("left", [ 2, 3 ], 10);
         this.player.actor.setupAnim("right", [ 4, 5 ], 10);
+        this.player.actor.setupAnim("death", [ 6, 7, 8, 9, 10 ], 10, function() {
+            GAME.State.set("main_menu");
+        });
         this.player.update.setupUpdate("main", function(obj) {
+            if (_this.player.hasTags("dead")) return;
             obj.actor.y += -_this.speed * GAME.Key.isPressed("ArrowUp") + _this.speed * GAME.Key.isPressed("ArrowDown");
             obj.actor.x += -_this.speed * GAME.Key.isPressed("ArrowLeft") + _this.speed * GAME.Key.isPressed("ArrowRight");
             if (obj.actor.y < 0) obj.actor.y = 0;
@@ -653,8 +661,8 @@ GAME.State.add("demo1", {
             }
             for (var i = 0; i < _this.enemies.length; ++i) {
                 if (_this.player.actor.intersects(_this.enemies[i].actor)) {
-                    GAME.State.set("main_menu");
-                    return;
+                    _this.player.addTags("dead");
+                    _this.player.actor.startAnim("death");
                 }
             }
             if (Math.random() * 100 < 2 && _this.enemies.length < _this.maxEnemies) {
@@ -746,7 +754,7 @@ GAME.State.add("load", {
             fontWeight: "bold"
         });
         GAME.Load.list({
-            files: [ "img/player.png", "img/demo-player.png", "img/demo-bg-back.png", "img/demo-bg-middle.png", "img/demo-bg-front.png", "img/logo.png", "img/ocean.jpg" ],
+            files: [ "img/player.png", "img/demo-player.png", "img/demo-bg-back.png", "img/demo-bg-middle.png", "img/demo-bg-front.png", "img/logo.png", "img/ocean.jpg", "img/bullet.png" ],
             progress: function(ev, elem) {
                 var prog = Math.round(ev.progress);
                 text.text = `Loading...${prog}%`;

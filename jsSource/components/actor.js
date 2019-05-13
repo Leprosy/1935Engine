@@ -54,11 +54,12 @@ GAME.Components.actor = {
     /**
      * Setups an animation call
      */
-    setupAnim: function(name, frames, fps) {
+    setupAnim: function(name, frames, fps, callback) {
         this.animations[name] = {
             frames: frames,
             fps: fps,
-            index: 0
+            index: 0,
+            callback: callback
         };
     },
 
@@ -81,6 +82,10 @@ GAME.Components.actor = {
 
             if (_this.animations[name].index >= frames.length) {
                 _this.animations[name].index = 0;
+
+                if (typeof _this.animations[name].callback === "function") {
+                    _this.animations[name].callback();
+                }
             }
 
             _this.setFrame(frames[_this.animations[name].index++]);

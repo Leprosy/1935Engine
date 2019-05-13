@@ -50,9 +50,14 @@ GAME.State.add("demo1", {
         this.player.actor.setupAnim("idle", [0, 1], 10);
         this.player.actor.setupAnim("left", [2, 3], 10);
         this.player.actor.setupAnim("right", [4, 5], 10);
+        this.player.actor.setupAnim("death", [6, 7, 8, 9, 10], 10, function() {
+            GAME.State.set("main_menu");
+        });
 
         // Player update
         this.player.update.setupUpdate("main", function(obj) {
+            if (_this.player.hasTags("dead")) return;
+
             // Check movement
             obj.actor.y += (-_this.speed * GAME.Key.isPressed("ArrowUp") +
                             _this.speed * GAME.Key.isPressed("ArrowDown"));
@@ -75,8 +80,10 @@ GAME.State.add("demo1", {
             // Collisions
             for (var i = 0; i < _this.enemies.length; ++i) {
                 if (_this.player.actor.intersects(_this.enemies[i].actor)) {
-                    GAME.State.set("main_menu");
-                    return;
+                    _this.player.addTags("dead");
+                    _this.player.actor.startAnim("death");
+                    //GAME.State.set("main_menu");
+                    //return;
                 }
             }
 
