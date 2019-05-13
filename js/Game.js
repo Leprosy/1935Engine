@@ -488,7 +488,7 @@ GAME.Components.actor = {
             if (_this.animations[name].index >= frames.length) {
                 _this.animations[name].index = 0;
                 if (typeof _this.animations[name].callback === "function") {
-                    _this.animations[name].callback();
+                    _this.animations[name].callback(_this.parent);
                 }
             }
             _this.setFrame(frames[_this.animations[name].index++]);
@@ -606,7 +606,27 @@ GAME.State.add("demo1", {
     speed: 10,
     width: 50,
     height: 40,
-    maxEnemies: 10,
+    maxEnemies: 1,
+    bulletSpeed: 5,
+    enemies: [],
+    bullets: [],
+    generateBullet: function(x, y, tx, ty) {
+        var name = "bullet" + this.bullets.length;
+        var bullet = new GAME.Ent(name, [ "actor", "update" ]);
+        bullet.actor.init(GAME.Canvas.createTxt("bullet"), 10, 10);
+        bullet.actor.x = x;
+        bullet.actor.y = y;
+        bullet.actor.setupAnim("idle", [ 0, 1 ], 10);
+        var _this = this;
+        var angle = Math.acos((x * tx + y * ty) / (Math.sqrt(x * x + y * y) * Math.sqrt(tx * tx + ty * ty)));
+        bullet.update.setupUpdate("move", function(obj) {
+            obj.actor.x += _this.bulletSpeed * Math.cos(angle);
+            obj.actor.y += _this.bulletSpeed * Math.sin(angle);
+        }, 60);
+        bullet.update.startUpdate("move");
+        bullet.actor.startAnim("idle");
+        return bullet;
+    },
     generateEnemy: function() {
         var name = "enemy" + this.enemies.length;
         var enemy = new GAME.Ent(name, [ "actor", "update" ]);
@@ -615,12 +635,21 @@ GAME.State.add("demo1", {
         enemy.actor.spriteObj.tint = 16711680;
         enemy.actor.x = Math.random() * GAME.Canvas.width;
         enemy.actor.y = 0;
+        enemy.actor.setupAnim("death", [ 6, 7, 8, 9, 10 ], 10, function(obj) {
+            _this.enemies.splice(_this.enemies.indexOf(obj), 1);
+            obj.destroy();
+        });
         var _this = this;
         enemy.update.setupUpdate("move", function(obj) {
             obj.actor.y += _this.speed / 4;
             if (obj.actor.y > GAME.Canvas.height) {
                 obj.destroy();
                 _this.enemies.splice(_this.enemies.indexOf(obj), 1);
+            }
+            if (!_this.player.hasTags("dead") && _this.player.actor.intersects(obj.actor)) {
+                _this.player.addTags("dead");
+                _this.player.actor.startAnim("death");
+                obj.actor.startAnim("death");
             }
         }, 60);
         enemy.update.startUpdate("move");
@@ -634,15 +663,17 @@ GAME.State.add("demo1", {
             obj.bg.scrollY(+5);
         }, 60);
         this.bg.update.startUpdate("scroll");
-        this.enemies = [];
         this.player = new GAME.Ent("player", [ "actor", "update" ]);
         window.player = this.player;
         this.player.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height);
         this.player.actor.setupAnim("idle", [ 0, 1 ], 10);
         this.player.actor.setupAnim("left", [ 2, 3 ], 10);
         this.player.actor.setupAnim("right", [ 4, 5 ], 10);
-        this.player.actor.setupAnim("death", [ 6, 7, 8, 9, 10 ], 10, function() {
-            GAME.State.set("main_menu");
+        this.player.actor.setupAnim("death", [ 6, 7, 8, 9, 10 ], 10, function(obj) {
+            obj.destroy();
+            setTimeout(function() {
+                GAME.State.set("main_menu");
+            }, 3e3);
         });
         this.player.update.setupUpdate("main", function(obj) {
             if (_this.player.hasTags("dead")) return;
@@ -658,12 +689,6 @@ GAME.State.add("demo1", {
                 obj.actor.startAnim("right");
             } else {
                 obj.actor.startAnim("idle");
-            }
-            for (var i = 0; i < _this.enemies.length; ++i) {
-                if (_this.player.actor.intersects(_this.enemies[i].actor)) {
-                    _this.player.addTags("dead");
-                    _this.player.actor.startAnim("death");
-                }
             }
             if (Math.random() * 100 < 2 && _this.enemies.length < _this.maxEnemies) {
                 var enemy = _this.generateEnemy();

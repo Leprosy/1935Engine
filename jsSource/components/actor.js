@@ -84,7 +84,7 @@ GAME.Components.actor = {
                 _this.animations[name].index = 0;
 
                 if (typeof _this.animations[name].callback === "function") {
-                    _this.animations[name].callback();
+                    _this.animations[name].callback(_this.parent);
                 }
             }
 
