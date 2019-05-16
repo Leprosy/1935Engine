@@ -1,28 +1,44 @@
 // Main menu state.
+// TODO spliced arrays => containers
 GAME.State.add("demo1", {
     name: "Demo 1",
     speed: 10,
     width: 50,
     height: 40,
-    maxEnemies: 1,
+    maxEnemies: 8,
     bulletSpeed: 5,
     enemies: [],
-    bullets: [],
+    enemyBullets: [],
 
-    generateBullet: function(x, y, tx, ty) {
-        var name = "bullet" + this.bullets.length;
+    generateEnemyBullet: function(x, y) {
+        var _this = this;
+        var name = "bullet" + this.enemyBullets.length;
+        var tx = this.player.actor.x;
+        var ty = this.player.actor.y;
+        var angle = Math.atan2(ty - y, tx - x);
         var bullet = new GAME.Ent(name, ["actor", "update"]);
         bullet.actor.init(GAME.Canvas.createTxt("bullet"), 10, 10);
         bullet.actor.x = x;
         bullet.actor.y = y;
         bullet.actor.setupAnim("idle", [0, 1], 10);
 
-        var _this = this;
-        var angle = Math.acos( (x * tx + y * ty) / (Math.sqrt(x*x + y*y) * Math.sqrt(tx*tx + ty*ty)) );
-
         bullet.update.setupUpdate("move", function(obj) {
             obj.actor.x += _this.bulletSpeed * Math.cos(angle);
             obj.actor.y += _this.bulletSpeed * Math.sin(angle);
+
+            // Out of bounds
+            if (obj.actor.x < 0 || obj.actor.y < 0 ||
+                obj.actor.x > GAME.Canvas.width || obj.actor.y > GAME.Canvas.height) {
+                _this.enemyBullets.splice(_this.enemyBullets.indexOf(obj), 1);
+                obj.destroy();
+            }
+
+            // Killed the player?
+            if (obj.actor.intersects(_this.player.actor)) {
+                _this.player.addTags("dead");
+                _this.player.actor.startAnim("death");
+                obj.destroy();
+            }
         }, 60);
 
         bullet.update.startUpdate("move");
@@ -62,10 +78,10 @@ GAME.State.add("demo1", {
             }
 
             // Shoot the player
-            /*if (Math.random() * 100 < 2) {
-                var bullet = _this.generateBullet(obj.actor.x, obj.actor.y, _this.player.actor.x, _this.player.actor.y);
-                _this.bullets.push(bullet);
-            }*/
+            if (Math.random() * 100 < 5 && !_this.player.hasTags("dead")) {
+                var bullet = _this.generateEnemyBullet(obj.actor.x, obj.actor.y);
+                _this.enemyBullets.push(bullet);
+            }
         }, 60);
 
         enemy.update.startUpdate("move");
