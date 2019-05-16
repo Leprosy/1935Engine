@@ -502,6 +502,9 @@ GAME.Components.actor = {
         }
     },
     intersects: function(actor) {
+        if (this.spriteObj._destroyed || actor.spriteObj._destroyed) {
+            return false;
+        }
         var me = this.spriteObj.getBounds();
         var it = actor.spriteObj.getBounds();
         return me.x + me.width > it.x && me.x < it.x + it.width && me.y + me.height > it.y && me.y < it.y + it.height;

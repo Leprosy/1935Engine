@@ -103,10 +103,14 @@ GAME.Components.actor = {
         }
     },
 
-    /** Intersection
-     *
+    /**
+     * Checks intersection between 2 actors
      */
      intersects: function(actor) {
+         if (this.spriteObj._destroyed || actor.spriteObj._destroyed) {
+             return false;
+         }
+
          var me = this.spriteObj.getBounds();
          var it = actor.spriteObj.getBounds();
 
