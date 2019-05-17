@@ -49,7 +49,7 @@ GAME.Canvas = (function() {
         },
 
         addTilingSprite: function(texture, width, height) {
-            var tsprite = new PIXI.TilingSprite(texture, width, height);
+            var tsprite = new PIXI.extras.TilingSprite(texture, width, height);
             pixiApp.stage.addChild(tsprite);
             return tsprite;
         },

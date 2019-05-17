@@ -89,7 +89,7 @@ GAME.Canvas = function() {
             return sprite;
         },
         addTilingSprite: function(texture, width, height) {
-            var tsprite = new PIXI.TilingSprite(texture, width, height);
+            var tsprite = new PIXI.extras.TilingSprite(texture, width, height);
             pixiApp.stage.addChild(tsprite);
             return tsprite;
         },
@@ -511,7 +511,9 @@ GAME.Components.actor = {
     },
     destroy: function() {
         this.stopAnim();
-        this.spriteObj.destroy();
+        if (!this.spriteObj._destroyed) {
+            this.spriteObj.destroy();
+        }
     }
 };
 
@@ -611,11 +613,35 @@ GAME.State.add("demo1", {
     height: 40,
     maxEnemies: 8,
     bulletSpeed: 5,
-    enemies: [],
-    enemyBullets: [],
+    generatePlayerBullet: function() {
+        var _this = this;
+        var name = "pbullet" + this.playerBullets.length;
+        var bullet = new GAME.Ent(name, [ "actor", "update" ]);
+        bullet.actor.init(GAME.Canvas.createTxt("bullet"), 10, 10);
+        bullet.actor.x = this.player.actor.x;
+        bullet.actor.y = this.player.actor.y;
+        bullet.actor.setupAnim("idle", [ 0, 1 ], 10);
+        bullet.update.setupUpdate("move", function(obj) {
+            obj.actor.y -= _this.bulletSpeed * 2;
+            if (obj.actor.y < 0) {
+                _this.playerBullets.splice(_this.playerBullets.indexOf(obj), 1);
+                obj.destroy();
+            }
+            for (var i = 0; i < _this.enemies.length; ++i) {
+                if (obj.actor.intersects(_this.enemies[i].actor)) {
+                    _this.enemies[i].actor.startAnim("death");
+                    _this.playerBullets.splice(_this.playerBullets.indexOf(obj), 1);
+                    obj.destroy();
+                }
+            }
+        }, 60);
+        bullet.update.startUpdate("move");
+        bullet.actor.startAnim("idle");
+        return bullet;
+    },
     generateEnemyBullet: function(x, y) {
         var _this = this;
-        var name = "bullet" + this.enemyBullets.length;
+        var name = "ebullet" + this.enemyBullets.length;
         var tx = this.player.actor.x;
         var ty = this.player.actor.y;
         var angle = Math.atan2(ty - y, tx - x);
@@ -634,6 +660,7 @@ GAME.State.add("demo1", {
             if (obj.actor.intersects(_this.player.actor)) {
                 _this.player.addTags("dead");
                 _this.player.actor.startAnim("death");
+                _this.enemyBullets.splice(_this.enemyBullets.indexOf(obj), 1);
                 obj.destroy();
             }
         }, 60);
@@ -647,7 +674,7 @@ GAME.State.add("demo1", {
         enemy.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height);
         enemy.actor.spriteObj.rotation = Math.PI;
         enemy.actor.spriteObj.tint = 16711680;
-        enemy.actor.x = Math.random() * GAME.Canvas.width;
+        enemy.actor.x = Math.random() * (GAME.Canvas.width - 50);
         enemy.actor.y = 0;
         enemy.actor.setupAnim("death", [ 6, 7, 8, 9, 10 ], 10, function(obj) {
             _this.enemies.splice(_this.enemies.indexOf(obj), 1);
@@ -675,6 +702,9 @@ GAME.State.add("demo1", {
     },
     init: function() {
         var _this = this;
+        this.enemies = [];
+        this.enemyBullets = [];
+        this.playerBullets = [];
         this.bg = new GAME.Ent("bg", [ "bg", "update" ]);
         this.bg.bg.init(GAME.Canvas.getTxt("ocean"), 800, 600);
         this.bg.update.setupUpdate("scroll", function(obj) {
@@ -717,6 +747,11 @@ GAME.State.add("demo1", {
         this.player.actor.x = 300;
         this.player.actor.startAnim("idle");
         this.player.update.startUpdate("main");
+        GAME.Key.add("Space", function(ev) {
+            if (!_this.player.hasTags("dead")) {
+                _this.playerBullets.push(_this.generatePlayerBullet());
+            }
+        });
         GAME.Key.add("Escape", function(ev) {
             GAME.State.set("main_menu");
         });
@@ -756,7 +791,7 @@ GAME.State.add("demo2", {
         this.player2.actor.init(GAME.Canvas.getTxt("demo-player"), 100, 100);
         this.player2.actor.setupAnim("idle", [ 10 ], 60);
         this.player2.actor.setupAnim("walk", [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ], 60);
-        this.player2.actor.y = 450;
+        this.player2.actor.y = 480;
         this.player2.actor.x = 300;
         this.player2.actor.startAnim("idle");
         var _this = this;

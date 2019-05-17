@@ -123,6 +123,9 @@ GAME.Components.actor = {
      */
      destroy: function() {
          this.stopAnim();
-         this.spriteObj.destroy();
+
+         if (!this.spriteObj._destroyed) {
+             this.spriteObj.destroy();
+         }
      }
 };

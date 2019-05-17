@@ -7,12 +7,43 @@ GAME.State.add("demo1", {
     height: 40,
     maxEnemies: 8,
     bulletSpeed: 5,
-    enemies: [],
-    enemyBullets: [],
+
+    generatePlayerBullet: function() {
+        var _this = this;
+        var name = "pbullet" + this.playerBullets.length;
+        var bullet = new GAME.Ent(name, ["actor", "update"]);
+        bullet.actor.init(GAME.Canvas.createTxt("bullet"), 10, 10);
+        bullet.actor.x = this.player.actor.x;
+        bullet.actor.y = this.player.actor.y;
+        bullet.actor.setupAnim("idle", [0, 1], 10);
+
+        bullet.update.setupUpdate("move", function(obj) {
+            obj.actor.y -= _this.bulletSpeed * 2;
+
+            // Out of bounds
+            if (obj.actor.y < 0) {
+                _this.playerBullets.splice(_this.playerBullets.indexOf(obj), 1);
+                obj.destroy();
+            }
+
+            // Killed an enemy?
+            for (var i = 0; i < _this.enemies.length; ++i) {
+                if (obj.actor.intersects(_this.enemies[i].actor)) {
+                    _this.enemies[i].actor.startAnim("death");
+                    _this.playerBullets.splice(_this.playerBullets.indexOf(obj), 1);
+                    obj.destroy();
+                }
+            }
+        }, 60);
+
+        bullet.update.startUpdate("move");
+        bullet.actor.startAnim("idle");
+        return bullet;
+    },
 
     generateEnemyBullet: function(x, y) {
         var _this = this;
-        var name = "bullet" + this.enemyBullets.length;
+        var name = "ebullet" + this.enemyBullets.length;
         var tx = this.player.actor.x;
         var ty = this.player.actor.y;
         var angle = Math.atan2(ty - y, tx - x);
@@ -37,6 +68,7 @@ GAME.State.add("demo1", {
             if (obj.actor.intersects(_this.player.actor)) {
                 _this.player.addTags("dead");
                 _this.player.actor.startAnim("death");
+                _this.enemyBullets.splice(_this.enemyBullets.indexOf(obj), 1);
                 obj.destroy();
             }
         }, 60);
@@ -52,7 +84,7 @@ GAME.State.add("demo1", {
         enemy.actor.init(GAME.Canvas.createTxt("player"), this.width, this.height);
         enemy.actor.spriteObj.rotation = Math.PI;
         enemy.actor.spriteObj.tint = 0xFF0000;
-        enemy.actor.x = Math.random() * GAME.Canvas.width;
+        enemy.actor.x = Math.random() * (GAME.Canvas.width - 50);
         enemy.actor.y = 0;
         enemy.actor.setupAnim("death", [6, 7, 8, 9, 10], 10, function(obj) {
             _this.enemies.splice(_this.enemies.indexOf(obj), 1);
@@ -90,6 +122,11 @@ GAME.State.add("demo1", {
 
     init: function() {
         var _this = this;
+
+        // Data structures
+        this.enemies = [];
+        this.enemyBullets = [];
+        this.playerBullets = [];
 
         // Bg
         this.bg = new GAME.Ent("bg", ["bg", "update"]);
@@ -148,6 +185,12 @@ GAME.State.add("demo1", {
         this.player.actor.x = 300;
         this.player.actor.startAnim("idle");
         this.player.update.startUpdate("main");
+
+        GAME.Key.add("Space", function(ev) {
+            if (!_this.player.hasTags("dead")) {
+                _this.playerBullets.push(_this.generatePlayerBullet());
+            }
+        });
 
         GAME.Key.add("Escape", function(ev) {
             GAME.State.set("main_menu");
