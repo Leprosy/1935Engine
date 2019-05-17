@@ -19,7 +19,7 @@ GAME.State.add("demo2", {
         this.player2.actor.init(GAME.Canvas.getTxt("demo-player"), 100, 100);
         this.player2.actor.setupAnim("idle", [10], 60);
         this.player2.actor.setupAnim("walk", [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], 60);
-        this.player2.actor.y = 450;
+        this.player2.actor.y = 480;
         this.player2.actor.x = 300;
         this.player2.actor.startAnim("idle");
 
